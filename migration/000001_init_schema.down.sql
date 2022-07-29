@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS history;
+DROP TABLE IF EXISTS app_request;
+DROP TABLE IF EXISTS phone_request;

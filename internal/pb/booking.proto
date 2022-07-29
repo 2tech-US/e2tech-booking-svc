@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package passenger;
+
+option go_package = "./internal/pb";
+
+service BookingService {
+  rpc ListHistory(ListHistoryRequest) returns (ListHistoryResponse) {}
+  rpc SendRequest(SendRequestRequest) returns (SendRequestResponse) {}
+
+  // passenger
+  rpc CreateRequest(CreateRequestRequest) returns (CreateRequestResponse) {}
+  rpc CloseRequest(CloseRequestRequest) returns (CloseRequestResponse) {}
+  
+  rpc GetResponse(GetResponseRequest) returns (GetResponseResponse) {}
+  
+  // driver
+  rpc AcceptRequest(AcceptRequestRequest) returns (AcceptRequestResponse) {}
+  rpc RejectRequest(RejectRequestRequest) returns (RejectRequestResponse) {}
+}
+
+message Location {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+message CreateRequestRequest {
+  string type = 1;
+  int64 passenger_id = 2;
+  string phone = 3;
+  Location pick_up_location = 4;
+  Location drop_off_location = 5;
+}
+
+message CreateRequestResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message CloseRequestRequest {
+  int64 passenger_id = 1;
+}
+
+message CloseRequestResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message DriverResponse {
+  string status = 1;
+  string name = 2;
+  Location location = 3;
+}
+
+message GetResponseRequest {
+  int64 passenger_id = 1;
+}
+
+message GetResponseResponse {
+  int64 status = 1;
+  string error = 2;
+  DriverResponse driver = 3;
+}
+
+message History {
+  string type = 1;
+  int64 passenger_id = 2;
+  string phone = 3;
+  Location pick_up_location = 4;
+  Location drop_off_location = 5;
+  int64 driver_id = 6;
+  string created_at = 7;
+}
+
+message ListHistoryRequest {
+  int64 passenger_id = 1;
+}
+
+message ListHistoryResponse {
+  int64 status = 1;
+  string error = 2;
+  repeated History history = 3;
+}
+
+message SendRequestRequest {
+  int64 driver_id = 1;
+  int64 request_id = 2;
+  string phone = 3;
+  Location pick_up_location = 4;
+  Location drop_off_location = 5;
+}
+
+message SendRequestResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message AcceptRequestRequest {
+  int64 driver_id = 1;
+  int64 request_id = 2;
+}
+
+message AcceptRequestResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message RejectRequestRequest {
+  int64 driver_id = 1;
+  int64 request_id = 2;
+}
+
+message RejectRequestResponse {
+  int64 status = 1;
+  string error = 2;
+}

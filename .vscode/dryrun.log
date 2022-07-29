@@ -1,0 +1,5 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/tuvan/Documents/Study/US/HK3Nam3/KTPM/backend/e2tech-backend/e2tech-booking-svc'
+docker run --name e2tech -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -p 5432:5432 -d postgres:12-alpine
+make: Leaving directory `/Users/tuvan/Documents/Study/US/HK3Nam3/KTPM/backend/e2tech-backend/e2tech-booking-svc'
+ 

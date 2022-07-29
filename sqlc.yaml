@@ -1,0 +1,14 @@
+version: "1"
+project:
+    id: ""
+packages:
+-   name: "db"
+    path: "./internal/db"
+    queries: "./query/"
+    schema: "./migration"
+    engine: "postgresql"
+    emit_json_tags: true
+    emit_prepared_queries: false
+    emit_interface: false
+    emit_exact_table_names: false 
+    output_db_file_name: "queries.go"
