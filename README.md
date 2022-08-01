@@ -3,7 +3,6 @@
 This is a documentation guide for the Tech2 Microservice Car Sharing system.
 
 
-## V1
 
 ### user
 
