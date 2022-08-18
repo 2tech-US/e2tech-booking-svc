@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package passenger;
+
+option go_package = "./internal/pb";
+
+service PassengerService {
+  rpc CreatePassenger(CreatePassengerRequest) returns (CreatePassengerResponse) {}
+  rpc GetPassengerByPhone(GetPassengerByPhoneRequest) returns (GetPassengerByPhoneResponse) {}
+  rpc ListPassengers(ListPassengersRequest) returns (ListPassengersResponse) {}
+  rpc UpdatePassenger(UpdatePassengerRequest) returns (UpdatePassengerResponse) {}
+  rpc DeletePassenger(DeletePassengerRequest) returns (DeletePassengerResponse) {}
+
+}
+
+message Passenger {
+  int64 id = 1;
+  string phone = 2;
+  string name = 3;
+  bool verified = 4;
+  string dateOfBirth = 5;
+}
+
+message CreatePassengerRequest {
+  string phone = 1;
+}
+
+message CreatePassengerResponse {
+  int64 status = 1;
+  string error = 2;
+  Passenger passenger = 3;
+}
+
+message GetPassengerByPhoneRequest {
+  string phone = 1;
+}
+
+message GetPassengerByPhoneResponse {
+  int64 status = 1;
+  string error = 2;
+  Passenger passenger = 3;
+}
+
+message ListPassengersRequest {
+  int32 offset = 1;
+  int32 limit = 2;
+}
+
+message ListPassengersResponse {
+  int64 status = 1;
+  string error = 2;
+  int64 total = 3;
+  int64 offset = 4;
+  int64 limit = 5;
+  repeated Passenger passenger = 6;
+}
+
+message UpdatePassengerRequest {
+  int64 id = 1;
+  string phone = 2;
+  string name = 3;
+  string dateOfBirth = 4;
+}
+
+message UpdatePassengerResponse {
+  int64 status = 1;
+  string error = 2;
+  Passenger passenger = 3;
+}
+
+
+message DeletePassengerRequest {
+  string phone = 1;
+}
+
+message DeletePassengerResponse {
+  int64 status = 1;
+  string error = 2;
+  string message = 3;
+}

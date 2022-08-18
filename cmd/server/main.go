@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/lntvan166/e2tech-booking-svc/internal/client"
 	"github.com/lntvan166/e2tech-booking-svc/internal/config"
 	"github.com/lntvan166/e2tech-booking-svc/internal/db"
 	"github.com/lntvan166/e2tech-booking-svc/internal/pb"
@@ -29,9 +30,18 @@ func main() {
 
 	fmt.Println("Booking Svc on", c.Port)
 
+	passengerSvc := &client.PassengerServiceClient{
+		Client: client.InitPassengerServiceClient(&c),
+	}
+	driverSvc := &client.DriverServiceClient{
+		Client: client.InitDriverServiceClient(&c),
+	}
+
 	s := services.Server{
-		DB:     DB,
-		Config: &c,
+		DB:           DB,
+		PassengerSvc: passengerSvc,
+		DriverSvc:    driverSvc,
+		Config:       &c,
 	}
 
 	grpcServer := grpc.NewServer()

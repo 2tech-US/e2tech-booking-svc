@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/lntvan166/e2tech-booking-svc/internal/client"
 	"github.com/lntvan166/e2tech-booking-svc/internal/db"
 	"github.com/lntvan166/e2tech-booking-svc/internal/pb"
 	"github.com/lntvan166/e2tech-booking-svc/internal/utils"
@@ -28,6 +29,19 @@ func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest
 			Error:  fmt.Sprintf("failed to create request: %v", err),
 		}, nil
 	}
+
+	_, err = s.DriverSvc.GetDriverNearby(ctx, &client.GetDriverNearbyRequest{
+		Latitude:  req.PickUpLocation.Latitude,
+		Longitude: req.PickUpLocation.Longitude,
+	})
+	if err != nil {
+		return &pb.CreateRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to get driver nearby: %v", err),
+		}, nil
+	}
+
+	// todo send notification to driver
 
 	return &pb.CreateRequestResponse{
 		Status: http.StatusOK,

@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package driver;
+
+option go_package = "./internal/pb";
+
+service DriverService {
+  rpc CreateDriver(CreateDriverRequest) returns (CreateDriverResponse) {}
+  rpc GetDriverByPhone(GetDriverByPhoneRequest) returns (GetDriverByPhoneResponse) {}
+  rpc GetDriverNearby(GetDriverNearbyRequest) returns (GetDriverNearbyResponse) {}
+  rpc GetLocation(GetLocationRequest) returns (GetLocationResponse) {}
+  rpc ListDrivers(ListDriversRequest) returns (ListDriversResponse) {}
+  rpc UpdateDriver(UpdateDriverRequest) returns (UpdateDriverResponse) {}
+  rpc UpdateLocation(UpdateLocationRequest) returns (UpdateLocationResponse) {}
+  rpc UpdateStatus(UpdateStatusRequest) returns (UpdateStatusResponse) {}
+  rpc DeleteDriver(DeleteDriverRequest) returns (DeleteDriverResponse) {}
+
+}
+
+message Driver {
+  int64 id = 1;
+  string phone = 2;
+  string name = 3;
+  string date_of_birth = 5;
+}
+
+message CreateDriverRequest {
+  string phone = 1;
+}
+
+message CreateDriverResponse {
+  int64 status = 1;
+  string error = 2;
+  Driver driver = 3;
+}
+
+message GetDriverByPhoneRequest {
+  string phone = 1;
+}
+
+message GetDriverByPhoneResponse {
+  int64 status = 1;
+  string error = 2;
+  Driver driver = 3;
+}
+
+message GetDriverNearbyRequest {
+  double latitude = 1;
+  double longitude = 2;
+  int32 number_of_drivers = 3;
+}
+
+message DriverNearby {
+  int64 driver_id = 1;
+  double distance = 2;
+  double latitude = 3;
+  double longitude = 4;
+}
+
+message GetDriverNearbyResponse {
+  int64 status = 1;
+  string error = 2;
+  repeated DriverNearby drivers = 3;
+}
+
+message GetLocationRequest {
+  string phone = 1;
+}
+
+message GetLocationResponse {
+  int64 status = 1;
+  string error = 2;
+  double latitude = 3;
+  double longitude = 4;
+}
+
+message ListDriversRequest {
+  int32 offset = 1;
+  int32 limit = 2;
+}
+
+message ListDriversResponse {
+  int64 status = 1;
+  string error = 2;
+  int64 total = 3;
+  int64 offset = 4;
+  int64 limit = 5;
+  repeated Driver driver = 6;
+}
+
+message UpdateDriverRequest {
+  int64 id = 1;
+  string phone = 2;
+  string name = 3;
+  string date_of_birth = 4;
+}
+
+message UpdateDriverResponse {
+  int64 status = 1;
+  string error = 2;
+  Driver driver = 3;
+}
+
+message UpdateLocationRequest {
+  string phone = 1;
+  double latitude = 2;
+  double longitude = 3;
+}
+
+message UpdateLocationResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message UpdateStatusRequest {
+  string phone = 1;
+  string status = 2;
+}
+
+message UpdateStatusResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message DeleteDriverRequest {
+  string phone = 1;
+}
+
+message DeleteDriverResponse {
+  int64 status = 1;
+  string error = 2;
+  string message = 3;
+}

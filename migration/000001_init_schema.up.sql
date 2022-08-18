@@ -1,7 +1,7 @@
 CREATE TABLE "request" (
   "id" bigserial PRIMARY KEY,
   "type" varchar NOT NULL,
-  "passenger_id" bigint,
+  "passenger_id" bigint UNIQUE,
   "phone" varchar NOT NULL,
   "pick_up_latitude" float8 NOT NULL,
   "pick_up_longitude" float8 NOT NULL,
