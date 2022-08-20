@@ -3,7 +3,7 @@ package utils
 const (
 	// request status
 	RequestStatusFinding    = "finding"
-	RequestStatusInProgress = "in progress"
+	RequestStatusInProgress = "inprogress"
 
 	// driver status
 	DriverStatusFinding    = "finding"
