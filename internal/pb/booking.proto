@@ -17,6 +17,7 @@ service BookingService {
   // driver
   rpc AcceptRequest(AcceptRequestRequest) returns (AcceptRequestResponse) {}
   rpc RejectRequest(RejectRequestRequest) returns (RejectRequestResponse) {}
+  rpc GetRequest(GetRequestRequest) returns (GetRequestResponse) {}
 }
 
 message Location {
@@ -112,4 +113,23 @@ message RejectRequestRequest {
 message RejectRequestResponse {
   int64 status = 1;
   string error = 2;
+}
+
+message Request {
+  int64 id = 1;
+  string type = 2;
+  string phone = 3;
+  Location pick_up_location = 4;
+  Location drop_off_location = 5;
+  string created_at = 6;
+}
+
+message GetRequestRequest {
+  string passenger_phone = 1;
+}
+
+message GetRequestResponse {
+  int64 status = 1;
+  string error = 2;
+  Request request = 3;
 }

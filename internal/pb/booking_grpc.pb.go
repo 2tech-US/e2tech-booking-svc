@@ -31,6 +31,7 @@ type BookingServiceClient interface {
 	// driver
 	AcceptRequest(ctx context.Context, in *AcceptRequestRequest, opts ...grpc.CallOption) (*AcceptRequestResponse, error)
 	RejectRequest(ctx context.Context, in *RejectRequestRequest, opts ...grpc.CallOption) (*RejectRequestResponse, error)
+	GetRequest(ctx context.Context, in *GetRequestRequest, opts ...grpc.CallOption) (*GetRequestResponse, error)
 }
 
 type bookingServiceClient struct {
@@ -104,6 +105,15 @@ func (c *bookingServiceClient) RejectRequest(ctx context.Context, in *RejectRequ
 	return out, nil
 }
 
+func (c *bookingServiceClient) GetRequest(ctx context.Context, in *GetRequestRequest, opts ...grpc.CallOption) (*GetRequestResponse, error) {
+	out := new(GetRequestResponse)
+	err := c.cc.Invoke(ctx, "/passenger.BookingService/GetRequest", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BookingServiceServer is the server API for BookingService service.
 // All implementations must embed UnimplementedBookingServiceServer
 // for forward compatibility
@@ -117,6 +127,7 @@ type BookingServiceServer interface {
 	// driver
 	AcceptRequest(context.Context, *AcceptRequestRequest) (*AcceptRequestResponse, error)
 	RejectRequest(context.Context, *RejectRequestRequest) (*RejectRequestResponse, error)
+	GetRequest(context.Context, *GetRequestRequest) (*GetRequestResponse, error)
 	mustEmbedUnimplementedBookingServiceServer()
 }
 
@@ -144,6 +155,9 @@ func (UnimplementedBookingServiceServer) AcceptRequest(context.Context, *AcceptR
 }
 func (UnimplementedBookingServiceServer) RejectRequest(context.Context, *RejectRequestRequest) (*RejectRequestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RejectRequest not implemented")
+}
+func (UnimplementedBookingServiceServer) GetRequest(context.Context, *GetRequestRequest) (*GetRequestResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRequest not implemented")
 }
 func (UnimplementedBookingServiceServer) mustEmbedUnimplementedBookingServiceServer() {}
 
@@ -284,6 +298,24 @@ func _BookingService_RejectRequest_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BookingService_GetRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BookingServiceServer).GetRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/passenger.BookingService/GetRequest",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BookingServiceServer).GetRequest(ctx, req.(*GetRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BookingService_ServiceDesc is the grpc.ServiceDesc for BookingService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -318,6 +350,10 @@ var BookingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RejectRequest",
 			Handler:    _BookingService_RejectRequest_Handler,
+		},
+		{
+			MethodName: "GetRequest",
+			Handler:    _BookingService_GetRequest_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

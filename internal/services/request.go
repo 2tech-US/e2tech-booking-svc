@@ -254,3 +254,37 @@ func (s *Server) updateNotificationRejected(ctx context.Context, requestID int64
 
 	return http.StatusOK, nil
 }
+
+func (s *Server) GetRequest(ctx context.Context, req *pb.GetRequestRequest) (*pb.GetRequestResponse, error) {
+	request, err := s.DB.GetRequestByPhone(ctx, req.PassengerPhone)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &pb.GetRequestResponse{
+				Status: http.StatusNotFound,
+				Error:  "request not found: %v",
+			}, nil
+		}
+		return &pb.GetRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to get request: %v", err),
+		}, nil
+	}
+
+	return &pb.GetRequestResponse{
+		Status: http.StatusOK,
+		Request: &pb.Request{
+			Id:    request.ID,
+			Type:  request.Type,
+			Phone: request.Phone,
+			PickUpLocation: &pb.Location{
+				Latitude:  request.PickUpLatitude,
+				Longitude: request.PickUpLongitude,
+			},
+			DropOffLocation: &pb.Location{
+				Latitude:  request.DropOffLatitude,
+				Longitude: request.DropOffLongitude,
+			},
+			CreatedAt: utils.ParsedDateToString(request.CreatedAt),
+		},
+	}, nil
+}
