@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Server) ListHistory(ctx context.Context, req *pb.ListHistoryRequest) (*pb.ListHistoryResponse, error) {
-	histories, err := s.DB.ListHistoryByPassengerID(ctx, req.PassengerId)
+	histories, err := s.DB.ListHistoryByPassengerPhone(ctx, req.PassengerPhone)
 	if err != nil {
 		return &pb.ListHistoryResponse{
 			Status: http.StatusInternalServerError,
@@ -21,9 +21,9 @@ func (s *Server) ListHistory(ctx context.Context, req *pb.ListHistoryRequest) (*
 	dataRsp := make([]*pb.History, len(histories))
 	for i, h := range histories {
 		dataRsp[i] = &pb.History{
-			Type:        h.Type,
-			PassengerId: h.PassengerID,
-			Phone:       h.Phone,
+			Type:           h.Type,
+			PassengerPhone: h.PassengerPhone,
+			DriverPhone:    h.DriverPhone,
 			PickUpLocation: &pb.Location{
 				Latitude:  h.PickUpLatitude,
 				Longitude: h.PickUpLongitude,
@@ -32,8 +32,8 @@ func (s *Server) ListHistory(ctx context.Context, req *pb.ListHistoryRequest) (*
 				Latitude:  h.DropOffLatitude,
 				Longitude: h.DropOffLongitude,
 			},
-			DriverId:  h.DriverID,
 			CreatedAt: utils.ParsedDateToString(h.CreatedAt),
+			DoneAt:    utils.ParsedDateToString(h.DoneAt),
 		}
 	}
 

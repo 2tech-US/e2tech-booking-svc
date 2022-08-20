@@ -15,7 +15,7 @@ import (
 func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest) (*pb.CreateRequestResponse, error) {
 	arg := db.CreateRequestParams{
 		Type:             req.Type,
-		PassengerID:      utils.NullInt64(req.PassengerId),
+		Phone:            req.Phone,
 		PickUpLatitude:   req.PickUpLocation.Latitude,
 		PickUpLongitude:  req.PickUpLocation.Longitude,
 		DropOffLatitude:  req.DropOffLocation.Latitude,
@@ -30,9 +30,10 @@ func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest
 		}, nil
 	}
 
-	_, err = s.DriverSvc.GetDriverNearby(ctx, &client.GetDriverNearbyRequest{
-		Latitude:  req.PickUpLocation.Latitude,
-		Longitude: req.PickUpLocation.Longitude,
+	driverRsp, err := s.DriverSvc.GetDriverNearby(ctx, &client.GetDriverNearbyRequest{
+		Latitude:        req.PickUpLocation.Latitude,
+		Longitude:       req.PickUpLocation.Longitude,
+		NumberOfDrivers: 5,
 	})
 	if err != nil {
 		return &pb.CreateRequestResponse{
@@ -41,7 +42,19 @@ func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest
 		}, nil
 	}
 
-	// todo send notification to driver
+	status, err := s.sendNotification(ctx, driverRsp.Drivers, sendNotificationData{
+		Phone:            req.Phone,
+		PickUpLatitude:   req.PickUpLocation.Latitude,
+		PickUpLongitude:  req.PickUpLocation.Longitude,
+		DropOffLatitude:  req.DropOffLocation.Latitude,
+		DropOffLongitude: req.DropOffLocation.Longitude,
+	})
+	if err != nil {
+		return &pb.CreateRequestResponse{
+			Status: status,
+			Error:  err.Error(),
+		}, nil
+	}
 
 	return &pb.CreateRequestResponse{
 		Status: http.StatusOK,
@@ -49,7 +62,7 @@ func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest
 }
 
 func (s *Server) CloseRequest(ctx context.Context, req *pb.CloseRequestRequest) (*pb.CloseRequestResponse, error) {
-	request, err := s.DB.GetRequestByPassengerID(ctx, utils.NullInt64(req.PassengerId))
+	request, err := s.DB.GetRequestByPhone(ctx, req.Phone)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return &pb.CloseRequestResponse{
@@ -63,7 +76,7 @@ func (s *Server) CloseRequest(ctx context.Context, req *pb.CloseRequestRequest) 
 		}, nil
 	}
 
-	err = s.DB.DeleteRequest(ctx, request.ID)
+	err = s.DB.DeleteRequest(ctx, request.Phone)
 	if err != nil {
 		return &pb.CloseRequestResponse{
 			Status: http.StatusInternalServerError,
@@ -77,35 +90,100 @@ func (s *Server) CloseRequest(ctx context.Context, req *pb.CloseRequestRequest) 
 }
 
 // TODO driver service
-// func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest) (*pb.AcceptRequestResponse, error) {
-// 	request, err := s.DB.GetRequest(ctx, req.RequestId)
-// 	if err != nil {
-// 		if err == sql.ErrNoRows {
-// 			return &pb.AcceptRequestResponse{
-// 				Status: http.StatusNotFound,
-// 				Error:  "request not found: %v",
-// 			}, nil
-// 		}
-// 		return &pb.AcceptRequestResponse{
-// 			Status: http.StatusInternalServerError,
-// 			Error:  fmt.Sprintf("failed to get request: %v", err),
-// 		}, nil
-// 	}
-// 	arg := db.CreateResponseParams{
-// 		RequestID:      request.ID,
-// 		DriverID:       req.DriverId,
-// 		DriverLatitude: req.DriverLocation.Latitude,
-// 	}
+func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest) (*pb.AcceptRequestResponse, error) {
+	request, err := s.DB.GetRequestByPhone(ctx, req.PassengerPhone)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &pb.AcceptRequestResponse{
+				Status: http.StatusNotFound,
+				Error:  "request is accepted or closed: %v",
+			}, nil
+		}
+		return &pb.AcceptRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to get request: %v", err),
+		}, nil
+	}
 
-// 	_, err = s.DB.CreateResponse(ctx, arg)
-// 	if err != nil {
-// 		return &pb.AcceptRequestResponse{
-// 			Status: http.StatusInternalServerError,
-// 			Error:  fmt.Sprintf("failed to accept request: %v", err),
-// 		}, nil
-// 	}
+	if request.Status != utils.RequestStatusFinding {
+		return &pb.AcceptRequestResponse{
+			Status: http.StatusBadRequest,
+			Error:  "request is accepted or closed",
+		}, nil
+	}
 
-// 	return &pb.AcceptRequestResponse{
-// 		Status: http.StatusOK,
-// 	}, nil
-// }
+	driver, err := s.DriverSvc.GetLocation(ctx, &client.GetLocationRequest{
+		Phone: req.DriverPhone,
+	})
+	if err != nil {
+		return &pb.AcceptRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to get driver location: %v", err),
+		}, nil
+	}
+
+	arg := db.CreateResponseParams{
+		RequestID:       request.ID,
+		DriverPhone:     req.DriverPhone,
+		DriverLatitude:  driver.Latitude,
+		DriverLongitude: driver.Longitude,
+	}
+
+	_, err = s.DB.CreateResponse(ctx, arg)
+	if err != nil {
+		return &pb.AcceptRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to accept request: %v", err),
+		}, nil
+	}
+
+	_, err = s.DB.UpdateStatusRequest(ctx, db.UpdateStatusRequestParams{
+		Phone:  req.PassengerPhone,
+		Status: utils.DriverStatusInProgress,
+	})
+	if err != nil {
+		return &pb.AcceptRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to update request status: %v", err),
+		}, nil
+	}
+
+	return &pb.AcceptRequestResponse{
+		Status: http.StatusOK,
+	}, nil
+}
+
+func (s *Server) RejectRequest(ctx context.Context, req *pb.RejectRequestRequest) (*pb.RejectRequestResponse, error) {
+	request, err := s.DB.GetRequestByPhone(ctx, req.PassengerPhone)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &pb.RejectRequestResponse{
+				Status: http.StatusNotFound,
+				Error:  "request is accepted or closed: %v",
+			}, nil
+		}
+		return &pb.RejectRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to get request: %v", err),
+		}, nil
+	}
+
+	if request.Status != utils.RequestStatusFinding {
+		return &pb.RejectRequestResponse{
+			Status: http.StatusBadRequest,
+			Error:  "request is accepted or closed",
+		}, nil
+	}
+
+	status, err := s.ResendNotification(ctx, request.Phone, req.DriverPhone)
+	if err != nil {
+		return &pb.RejectRequestResponse{
+			Status: status,
+			Error:  err.Error(),
+		}, nil
+	}
+
+	return &pb.RejectRequestResponse{
+		Status: http.StatusOK,
+	}, nil
+}

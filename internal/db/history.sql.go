@@ -13,9 +13,8 @@ import (
 const createHistory = `-- name: CreateHistory :one
 INSERT INTO history (
   type,
-  phone,
-  passenger_id,
-  driver_id,
+  passenger_phone,
+  driver_phone,
   pick_up_latitude,
   pick_up_longitude,
   drop_off_latitude,
@@ -23,16 +22,15 @@ INSERT INTO history (
   created_at,
   done_at
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+  $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
-RETURNING id, type, phone, passenger_id, driver_id, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at
+RETURNING id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at
 `
 
 type CreateHistoryParams struct {
 	Type             string    `json:"type"`
-	Phone            string    `json:"phone"`
-	PassengerID      int64     `json:"passenger_id"`
-	DriverID         int64     `json:"driver_id"`
+	PassengerPhone   string    `json:"passenger_phone"`
+	DriverPhone      string    `json:"driver_phone"`
 	PickUpLatitude   float64   `json:"pick_up_latitude"`
 	PickUpLongitude  float64   `json:"pick_up_longitude"`
 	DropOffLatitude  float64   `json:"drop_off_latitude"`
@@ -44,9 +42,8 @@ type CreateHistoryParams struct {
 func (q *Queries) CreateHistory(ctx context.Context, arg CreateHistoryParams) (History, error) {
 	row := q.db.QueryRowContext(ctx, createHistory,
 		arg.Type,
-		arg.Phone,
-		arg.PassengerID,
-		arg.DriverID,
+		arg.PassengerPhone,
+		arg.DriverPhone,
 		arg.PickUpLatitude,
 		arg.PickUpLongitude,
 		arg.DropOffLatitude,
@@ -58,9 +55,8 @@ func (q *Queries) CreateHistory(ctx context.Context, arg CreateHistoryParams) (H
 	err := row.Scan(
 		&i.ID,
 		&i.Type,
-		&i.Phone,
-		&i.PassengerID,
-		&i.DriverID,
+		&i.PassengerPhone,
+		&i.DriverPhone,
 		&i.PickUpLatitude,
 		&i.PickUpLongitude,
 		&i.DropOffLatitude,
@@ -82,7 +78,7 @@ func (q *Queries) DeleteHistory(ctx context.Context, id int64) error {
 }
 
 const getHistory = `-- name: GetHistory :one
-SELECT id, type, phone, passenger_id, driver_id, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
 WHERE id = $1 LIMIT 1
 `
 
@@ -92,9 +88,8 @@ func (q *Queries) GetHistory(ctx context.Context, id int64) (History, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Type,
-		&i.Phone,
-		&i.PassengerID,
-		&i.DriverID,
+		&i.PassengerPhone,
+		&i.DriverPhone,
 		&i.PickUpLatitude,
 		&i.PickUpLongitude,
 		&i.DropOffLatitude,
@@ -105,13 +100,13 @@ func (q *Queries) GetHistory(ctx context.Context, id int64) (History, error) {
 	return i, err
 }
 
-const listHistoryByPassengerID = `-- name: ListHistoryByPassengerID :many
-SELECT id, type, phone, passenger_id, driver_id, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
-WHERE passenger_id = $1
+const listHistoryByDriverPhone = `-- name: ListHistoryByDriverPhone :many
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
+WHERE driver_phone = $1
 `
 
-func (q *Queries) ListHistoryByPassengerID(ctx context.Context, passengerID int64) ([]History, error) {
-	rows, err := q.db.QueryContext(ctx, listHistoryByPassengerID, passengerID)
+func (q *Queries) ListHistoryByDriverPhone(ctx context.Context, driverPhone string) ([]History, error) {
+	rows, err := q.db.QueryContext(ctx, listHistoryByDriverPhone, driverPhone)
 	if err != nil {
 		return nil, err
 	}
@@ -122,9 +117,8 @@ func (q *Queries) ListHistoryByPassengerID(ctx context.Context, passengerID int6
 		if err := rows.Scan(
 			&i.ID,
 			&i.Type,
-			&i.Phone,
-			&i.PassengerID,
-			&i.DriverID,
+			&i.PassengerPhone,
+			&i.DriverPhone,
 			&i.PickUpLatitude,
 			&i.PickUpLongitude,
 			&i.DropOffLatitude,
@@ -145,13 +139,13 @@ func (q *Queries) ListHistoryByPassengerID(ctx context.Context, passengerID int6
 	return items, nil
 }
 
-const listHistoryByPhone = `-- name: ListHistoryByPhone :many
-SELECT id, type, phone, passenger_id, driver_id, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
-WHERE phone = $1
+const listHistoryByPassengerPhone = `-- name: ListHistoryByPassengerPhone :many
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
+WHERE passenger_phone = $1
 `
 
-func (q *Queries) ListHistoryByPhone(ctx context.Context, phone string) ([]History, error) {
-	rows, err := q.db.QueryContext(ctx, listHistoryByPhone, phone)
+func (q *Queries) ListHistoryByPassengerPhone(ctx context.Context, passengerPhone string) ([]History, error) {
+	rows, err := q.db.QueryContext(ctx, listHistoryByPassengerPhone, passengerPhone)
 	if err != nil {
 		return nil, err
 	}
@@ -162,9 +156,8 @@ func (q *Queries) ListHistoryByPhone(ctx context.Context, phone string) ([]Histo
 		if err := rows.Scan(
 			&i.ID,
 			&i.Type,
-			&i.Phone,
-			&i.PassengerID,
-			&i.DriverID,
+			&i.PassengerPhone,
+			&i.DriverPhone,
 			&i.PickUpLatitude,
 			&i.PickUpLongitude,
 			&i.DropOffLatitude,
@@ -186,7 +179,7 @@ func (q *Queries) ListHistoryByPhone(ctx context.Context, phone string) ([]Histo
 }
 
 const listHistorys = `-- name: ListHistorys :many
-SELECT id, type, phone, passenger_id, driver_id, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -209,9 +202,8 @@ func (q *Queries) ListHistorys(ctx context.Context, arg ListHistorysParams) ([]H
 		if err := rows.Scan(
 			&i.ID,
 			&i.Type,
-			&i.Phone,
-			&i.PassengerID,
-			&i.DriverID,
+			&i.PassengerPhone,
+			&i.DriverPhone,
 			&i.PickUpLatitude,
 			&i.PickUpLongitude,
 			&i.DropOffLatitude,

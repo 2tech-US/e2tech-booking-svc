@@ -1,7 +1,7 @@
 -- name: CreateResponse :one
 INSERT INTO response (
   request_id,
-  driver_id,
+  driver_phone,
   driver_latitude,
   driver_longitude
 ) VALUES (
@@ -17,9 +17,9 @@ WHERE id = $1 LIMIT 1;
 SELECT * FROM response
 WHERE request_id = $1 LIMIT 1;
 
--- name: GetResponseByPassengerID :one
-SELECT * FROM response
-WHERE request_id = $1 LIMIT 1;
+-- name: GetResponseByPassengerPhone :one
+SELECT * FROM response JOIN request ON request.id = response.request_id
+WHERE request.phone = $1 LIMIT 1;
 
 -- name: ListResponses :many
 SELECT * FROM response
@@ -29,7 +29,7 @@ OFFSET $2;
 
 -- name: UpdateResponse :one
 UPDATE response
-SET driver_id = $2,
+SET driver_phone = $2,
     driver_latitude = $3,
     driver_longitude = $4
 WHERE id = $1
@@ -37,4 +37,4 @@ RETURNING *;
 
 -- name: DeleteResponse :exec
 DELETE FROM response
-WHERE id = $1;
+WHERE driver_phone = $1;

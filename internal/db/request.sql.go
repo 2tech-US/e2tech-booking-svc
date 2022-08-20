@@ -7,13 +7,12 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createRequest = `-- name: CreateRequest :one
 INSERT INTO request (
   type,
-  passenger_id,
+  phone,
   pick_up_latitude,
   pick_up_longitude,
   drop_off_latitude,
@@ -21,22 +20,22 @@ INSERT INTO request (
 ) VALUES (
   $1, $2, $3, $4, $5, $6
 )
-RETURNING id, type, passenger_id, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at
+RETURNING id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at
 `
 
 type CreateRequestParams struct {
-	Type             string        `json:"type"`
-	PassengerID      sql.NullInt64 `json:"passenger_id"`
-	PickUpLatitude   float64       `json:"pick_up_latitude"`
-	PickUpLongitude  float64       `json:"pick_up_longitude"`
-	DropOffLatitude  float64       `json:"drop_off_latitude"`
-	DropOffLongitude float64       `json:"drop_off_longitude"`
+	Type             string  `json:"type"`
+	Phone            string  `json:"phone"`
+	PickUpLatitude   float64 `json:"pick_up_latitude"`
+	PickUpLongitude  float64 `json:"pick_up_longitude"`
+	DropOffLatitude  float64 `json:"drop_off_latitude"`
+	DropOffLongitude float64 `json:"drop_off_longitude"`
 }
 
 func (q *Queries) CreateRequest(ctx context.Context, arg CreateRequestParams) (Request, error) {
 	row := q.db.QueryRowContext(ctx, createRequest,
 		arg.Type,
-		arg.PassengerID,
+		arg.Phone,
 		arg.PickUpLatitude,
 		arg.PickUpLongitude,
 		arg.DropOffLatitude,
@@ -46,7 +45,6 @@ func (q *Queries) CreateRequest(ctx context.Context, arg CreateRequestParams) (R
 	err := row.Scan(
 		&i.ID,
 		&i.Type,
-		&i.PassengerID,
 		&i.Phone,
 		&i.PickUpLatitude,
 		&i.PickUpLongitude,
@@ -61,16 +59,16 @@ func (q *Queries) CreateRequest(ctx context.Context, arg CreateRequestParams) (R
 
 const deleteRequest = `-- name: DeleteRequest :exec
 DELETE FROM request
-WHERE id = $1
+WHERE phone = $1
 `
 
-func (q *Queries) DeleteRequest(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteRequest, id)
+func (q *Queries) DeleteRequest(ctx context.Context, phone string) error {
+	_, err := q.db.ExecContext(ctx, deleteRequest, phone)
 	return err
 }
 
 const getRequest = `-- name: GetRequest :one
-SELECT id, type, passenger_id, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at FROM request
+SELECT id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at FROM request
 WHERE id = $1 LIMIT 1
 `
 
@@ -80,7 +78,6 @@ func (q *Queries) GetRequest(ctx context.Context, id int64) (Request, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Type,
-		&i.PassengerID,
 		&i.Phone,
 		&i.PickUpLatitude,
 		&i.PickUpLongitude,
@@ -93,18 +90,17 @@ func (q *Queries) GetRequest(ctx context.Context, id int64) (Request, error) {
 	return i, err
 }
 
-const getRequestByPassengerID = `-- name: GetRequestByPassengerID :one
-SELECT id, type, passenger_id, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at FROM request
-WHERE passenger_id = $1 LIMIT 1
+const getRequestByPhone = `-- name: GetRequestByPhone :one
+SELECT id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at FROM request
+WHERE phone = $1 LIMIT 1
 `
 
-func (q *Queries) GetRequestByPassengerID(ctx context.Context, passengerID sql.NullInt64) (Request, error) {
-	row := q.db.QueryRowContext(ctx, getRequestByPassengerID, passengerID)
+func (q *Queries) GetRequestByPhone(ctx context.Context, phone string) (Request, error) {
+	row := q.db.QueryRowContext(ctx, getRequestByPhone, phone)
 	var i Request
 	err := row.Scan(
 		&i.ID,
 		&i.Type,
-		&i.PassengerID,
 		&i.Phone,
 		&i.PickUpLatitude,
 		&i.PickUpLongitude,
@@ -118,7 +114,7 @@ func (q *Queries) GetRequestByPassengerID(ctx context.Context, passengerID sql.N
 }
 
 const listRequests = `-- name: ListRequests :many
-SELECT id, type, passenger_id, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at FROM request
+SELECT id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at FROM request
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -141,7 +137,6 @@ func (q *Queries) ListRequests(ctx context.Context, arg ListRequestsParams) ([]R
 		if err := rows.Scan(
 			&i.ID,
 			&i.Type,
-			&i.PassengerID,
 			&i.Phone,
 			&i.PickUpLatitude,
 			&i.PickUpLongitude,
@@ -167,22 +162,21 @@ func (q *Queries) ListRequests(ctx context.Context, arg ListRequestsParams) ([]R
 const updateStatusRequest = `-- name: UpdateStatusRequest :one
 UPDATE request
 SET status = $2
-WHERE id = $1
-RETURNING id, type, passenger_id, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at
+WHERE phone = $1
+RETURNING id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at
 `
 
 type UpdateStatusRequestParams struct {
-	ID     int64  `json:"id"`
+	Phone  string `json:"phone"`
 	Status string `json:"status"`
 }
 
 func (q *Queries) UpdateStatusRequest(ctx context.Context, arg UpdateStatusRequestParams) (Request, error) {
-	row := q.db.QueryRowContext(ctx, updateStatusRequest, arg.ID, arg.Status)
+	row := q.db.QueryRowContext(ctx, updateStatusRequest, arg.Phone, arg.Status)
 	var i Request
 	err := row.Scan(
 		&i.ID,
 		&i.Type,
-		&i.PassengerID,
 		&i.Phone,
 		&i.PickUpLatitude,
 		&i.PickUpLongitude,

@@ -10,12 +10,11 @@ import (
 )
 
 type History struct {
-	ID    int64  `json:"id"`
-	Type  string `json:"type"`
-	Phone string `json:"phone"`
+	ID   int64  `json:"id"`
+	Type string `json:"type"`
 	// 0 if passenger is non-user
-	PassengerID      int64     `json:"passenger_id"`
-	DriverID         int64     `json:"driver_id"`
+	PassengerPhone   string    `json:"passenger_phone"`
+	DriverPhone      string    `json:"driver_phone"`
 	PickUpLatitude   float64   `json:"pick_up_latitude"`
 	PickUpLongitude  float64   `json:"pick_up_longitude"`
 	DropOffLatitude  float64   `json:"drop_off_latitude"`
@@ -24,26 +23,30 @@ type History struct {
 	DoneAt           time.Time `json:"done_at"`
 }
 
+type NotificationSent struct {
+	ID                  int64    `json:"id"`
+	RequestID           int64    `json:"request_id"`
+	DriverPhoneRejected []string `json:"driver_phone_rejected"`
+}
+
 type Request struct {
-	ID   int64  `json:"id"`
-	Type string `json:"type"`
-	// null if type is "phone"
-	PassengerID      sql.NullInt64 `json:"passenger_id"`
-	Phone            string        `json:"phone"`
-	PickUpLatitude   float64       `json:"pick_up_latitude"`
-	PickUpLongitude  float64       `json:"pick_up_longitude"`
-	DropOffLatitude  float64       `json:"drop_off_latitude"`
-	DropOffLongitude float64       `json:"drop_off_longitude"`
-	Status           string        `json:"status"`
-	CreatedAt        time.Time     `json:"created_at"`
-	ExpireAt         sql.NullTime  `json:"expire_at"`
+	ID               int64        `json:"id"`
+	Type             string       `json:"type"`
+	Phone            string       `json:"phone"`
+	PickUpLatitude   float64      `json:"pick_up_latitude"`
+	PickUpLongitude  float64      `json:"pick_up_longitude"`
+	DropOffLatitude  float64      `json:"drop_off_latitude"`
+	DropOffLongitude float64      `json:"drop_off_longitude"`
+	Status           string       `json:"status"`
+	CreatedAt        time.Time    `json:"created_at"`
+	ExpireAt         sql.NullTime `json:"expire_at"`
 }
 
 type Response struct {
 	ID        int64 `json:"id"`
 	RequestID int64 `json:"request_id"`
 	// 0 if found_driver is false
-	DriverID        int64     `json:"driver_id"`
+	DriverPhone     string    `json:"driver_phone"`
 	DriverName      string    `json:"driver_name"`
 	DriverLatitude  float64   `json:"driver_latitude"`
 	DriverLongitude float64   `json:"driver_longitude"`

@@ -1,7 +1,7 @@
 -- name: CreateRequest :one
 INSERT INTO request (
   type,
-  passenger_id,
+  phone,
   pick_up_latitude,
   pick_up_longitude,
   drop_off_latitude,
@@ -15,9 +15,9 @@ RETURNING *;
 SELECT * FROM request
 WHERE id = $1 LIMIT 1;
 
--- name: GetRequestByPassengerID :one
+-- name: GetRequestByPhone :one
 SELECT * FROM request
-WHERE passenger_id = $1 LIMIT 1;
+WHERE phone = $1 LIMIT 1;
 
 -- name: ListRequests :many
 SELECT * FROM request
@@ -28,9 +28,9 @@ OFFSET $2;
 -- name: UpdateStatusRequest :one
 UPDATE request
 SET status = $2
-WHERE id = $1
+WHERE phone = $1
 RETURNING *;
 
 -- name: DeleteRequest :exec
 DELETE FROM request
-WHERE id = $1;
+WHERE phone = $1;

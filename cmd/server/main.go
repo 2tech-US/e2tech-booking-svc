@@ -30,18 +30,27 @@ func main() {
 
 	fmt.Println("Booking Svc on", c.Port)
 
+	authSvc := &client.AuthServiceClient{
+		Client: client.InitAuthServiceClient(&c),
+	}
 	passengerSvc := &client.PassengerServiceClient{
 		Client: client.InitPassengerServiceClient(&c),
 	}
 	driverSvc := &client.DriverServiceClient{
 		Client: client.InitDriverServiceClient(&c),
 	}
+	notificationSvc := &client.NotificationServiceClient{
+		Client: client.InitNotificationServiceClient(&c),
+		ApiKey: c.FirebaseApiKey,
+	}
 
 	s := services.Server{
-		DB:           DB,
-		PassengerSvc: passengerSvc,
-		DriverSvc:    driverSvc,
-		Config:       &c,
+		DB:              DB,
+		AuthSvc:         authSvc,
+		PassengerSvc:    passengerSvc,
+		DriverSvc:       driverSvc,
+		NotificationSvc: notificationSvc,
+		Config:          &c,
 	}
 
 	grpcServer := grpc.NewServer()

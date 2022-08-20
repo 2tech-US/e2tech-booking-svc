@@ -7,11 +7,10 @@ import (
 	"net/http"
 
 	"github.com/lntvan166/e2tech-booking-svc/internal/pb"
-	"github.com/lntvan166/e2tech-booking-svc/internal/utils"
 )
 
 func (s *Server) GetResponse(ctx context.Context, req *pb.GetResponseRequest) (*pb.GetResponseResponse, error) {
-	request, err := s.DB.GetRequestByPassengerID(ctx, utils.NullInt64(req.PassengerId))
+	request, err := s.DB.GetRequestByPhone(ctx, req.Phone)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return &pb.GetResponseResponse{

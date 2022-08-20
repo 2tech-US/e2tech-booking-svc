@@ -7,23 +7,25 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"time"
 )
 
 const createResponse = `-- name: CreateResponse :one
 INSERT INTO response (
   request_id,
-  driver_id,
+  driver_phone,
   driver_latitude,
   driver_longitude
 ) VALUES (
   $1, $2, $3, $4
 )
-RETURNING id, request_id, driver_id, driver_name, driver_latitude, driver_longitude, created_at
+RETURNING id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, created_at
 `
 
 type CreateResponseParams struct {
 	RequestID       int64   `json:"request_id"`
-	DriverID        int64   `json:"driver_id"`
+	DriverPhone     string  `json:"driver_phone"`
 	DriverLatitude  float64 `json:"driver_latitude"`
 	DriverLongitude float64 `json:"driver_longitude"`
 }
@@ -31,7 +33,7 @@ type CreateResponseParams struct {
 func (q *Queries) CreateResponse(ctx context.Context, arg CreateResponseParams) (Response, error) {
 	row := q.db.QueryRowContext(ctx, createResponse,
 		arg.RequestID,
-		arg.DriverID,
+		arg.DriverPhone,
 		arg.DriverLatitude,
 		arg.DriverLongitude,
 	)
@@ -39,7 +41,7 @@ func (q *Queries) CreateResponse(ctx context.Context, arg CreateResponseParams) 
 	err := row.Scan(
 		&i.ID,
 		&i.RequestID,
-		&i.DriverID,
+		&i.DriverPhone,
 		&i.DriverName,
 		&i.DriverLatitude,
 		&i.DriverLongitude,
@@ -50,16 +52,16 @@ func (q *Queries) CreateResponse(ctx context.Context, arg CreateResponseParams) 
 
 const deleteResponse = `-- name: DeleteResponse :exec
 DELETE FROM response
-WHERE id = $1
+WHERE driver_phone = $1
 `
 
-func (q *Queries) DeleteResponse(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteResponse, id)
+func (q *Queries) DeleteResponse(ctx context.Context, driverPhone string) error {
+	_, err := q.db.ExecContext(ctx, deleteResponse, driverPhone)
 	return err
 }
 
 const getResponse = `-- name: GetResponse :one
-SELECT id, request_id, driver_id, driver_name, driver_latitude, driver_longitude, created_at FROM response
+SELECT id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, created_at FROM response
 WHERE id = $1 LIMIT 1
 `
 
@@ -69,7 +71,7 @@ func (q *Queries) GetResponse(ctx context.Context, id int64) (Response, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.RequestID,
-		&i.DriverID,
+		&i.DriverPhone,
 		&i.DriverName,
 		&i.DriverLatitude,
 		&i.DriverLongitude,
@@ -78,28 +80,58 @@ func (q *Queries) GetResponse(ctx context.Context, id int64) (Response, error) {
 	return i, err
 }
 
-const getResponseByPassengerID = `-- name: GetResponseByPassengerID :one
-SELECT id, request_id, driver_id, driver_name, driver_latitude, driver_longitude, created_at FROM response
-WHERE request_id = $1 LIMIT 1
+const getResponseByPassengerPhone = `-- name: GetResponseByPassengerPhone :one
+SELECT response.id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, response.created_at, request.id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, request.created_at, expire_at FROM response JOIN request ON request.id = response.request_id
+WHERE request.phone = $1 LIMIT 1
 `
 
-func (q *Queries) GetResponseByPassengerID(ctx context.Context, requestID int64) (Response, error) {
-	row := q.db.QueryRowContext(ctx, getResponseByPassengerID, requestID)
-	var i Response
+type GetResponseByPassengerPhoneRow struct {
+	ID               int64        `json:"id"`
+	RequestID        int64        `json:"request_id"`
+	DriverPhone      string       `json:"driver_phone"`
+	DriverName       string       `json:"driver_name"`
+	DriverLatitude   float64      `json:"driver_latitude"`
+	DriverLongitude  float64      `json:"driver_longitude"`
+	CreatedAt        time.Time    `json:"created_at"`
+	ID_2             int64        `json:"id_2"`
+	Type             string       `json:"type"`
+	Phone            string       `json:"phone"`
+	PickUpLatitude   float64      `json:"pick_up_latitude"`
+	PickUpLongitude  float64      `json:"pick_up_longitude"`
+	DropOffLatitude  float64      `json:"drop_off_latitude"`
+	DropOffLongitude float64      `json:"drop_off_longitude"`
+	Status           string       `json:"status"`
+	CreatedAt_2      time.Time    `json:"created_at_2"`
+	ExpireAt         sql.NullTime `json:"expire_at"`
+}
+
+func (q *Queries) GetResponseByPassengerPhone(ctx context.Context, phone string) (GetResponseByPassengerPhoneRow, error) {
+	row := q.db.QueryRowContext(ctx, getResponseByPassengerPhone, phone)
+	var i GetResponseByPassengerPhoneRow
 	err := row.Scan(
 		&i.ID,
 		&i.RequestID,
-		&i.DriverID,
+		&i.DriverPhone,
 		&i.DriverName,
 		&i.DriverLatitude,
 		&i.DriverLongitude,
 		&i.CreatedAt,
+		&i.ID_2,
+		&i.Type,
+		&i.Phone,
+		&i.PickUpLatitude,
+		&i.PickUpLongitude,
+		&i.DropOffLatitude,
+		&i.DropOffLongitude,
+		&i.Status,
+		&i.CreatedAt_2,
+		&i.ExpireAt,
 	)
 	return i, err
 }
 
 const getResponseByRequestID = `-- name: GetResponseByRequestID :one
-SELECT id, request_id, driver_id, driver_name, driver_latitude, driver_longitude, created_at FROM response
+SELECT id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, created_at FROM response
 WHERE request_id = $1 LIMIT 1
 `
 
@@ -109,7 +141,7 @@ func (q *Queries) GetResponseByRequestID(ctx context.Context, requestID int64) (
 	err := row.Scan(
 		&i.ID,
 		&i.RequestID,
-		&i.DriverID,
+		&i.DriverPhone,
 		&i.DriverName,
 		&i.DriverLatitude,
 		&i.DriverLongitude,
@@ -119,7 +151,7 @@ func (q *Queries) GetResponseByRequestID(ctx context.Context, requestID int64) (
 }
 
 const listResponses = `-- name: ListResponses :many
-SELECT id, request_id, driver_id, driver_name, driver_latitude, driver_longitude, created_at FROM response
+SELECT id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, created_at FROM response
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -142,7 +174,7 @@ func (q *Queries) ListResponses(ctx context.Context, arg ListResponsesParams) ([
 		if err := rows.Scan(
 			&i.ID,
 			&i.RequestID,
-			&i.DriverID,
+			&i.DriverPhone,
 			&i.DriverName,
 			&i.DriverLatitude,
 			&i.DriverLongitude,
@@ -163,16 +195,16 @@ func (q *Queries) ListResponses(ctx context.Context, arg ListResponsesParams) ([
 
 const updateResponse = `-- name: UpdateResponse :one
 UPDATE response
-SET driver_id = $2,
+SET driver_phone = $2,
     driver_latitude = $3,
     driver_longitude = $4
 WHERE id = $1
-RETURNING id, request_id, driver_id, driver_name, driver_latitude, driver_longitude, created_at
+RETURNING id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, created_at
 `
 
 type UpdateResponseParams struct {
 	ID              int64   `json:"id"`
-	DriverID        int64   `json:"driver_id"`
+	DriverPhone     string  `json:"driver_phone"`
 	DriverLatitude  float64 `json:"driver_latitude"`
 	DriverLongitude float64 `json:"driver_longitude"`
 }
@@ -180,7 +212,7 @@ type UpdateResponseParams struct {
 func (q *Queries) UpdateResponse(ctx context.Context, arg UpdateResponseParams) (Response, error) {
 	row := q.db.QueryRowContext(ctx, updateResponse,
 		arg.ID,
-		arg.DriverID,
+		arg.DriverPhone,
 		arg.DriverLatitude,
 		arg.DriverLongitude,
 	)
@@ -188,7 +220,7 @@ func (q *Queries) UpdateResponse(ctx context.Context, arg UpdateResponseParams) 
 	err := row.Scan(
 		&i.ID,
 		&i.RequestID,
-		&i.DriverID,
+		&i.DriverPhone,
 		&i.DriverName,
 		&i.DriverLatitude,
 		&i.DriverLongitude,

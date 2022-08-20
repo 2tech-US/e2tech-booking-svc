@@ -3,6 +3,7 @@ module github.com/lntvan166/e2tech-booking-svc
 go 1.18
 
 require (
+	github.com/appleboy/gorush v1.15.0
 	github.com/kelvins/geocoder v0.0.0-20200113010004-f579500e9e27
 	github.com/lib/pq v1.10.6
 	github.com/spf13/viper v1.12.0
