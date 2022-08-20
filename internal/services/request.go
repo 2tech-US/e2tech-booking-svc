@@ -49,19 +49,25 @@ func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest
 			Error:  fmt.Sprintf("failed to create request: %v", err),
 		}, nil
 	}
-
-	status, err := s.sendNotification(ctx, driverRsp.Drivers, sendNotificationData{
-		Phone:            req.Phone,
-		PickUpLatitude:   req.PickUpLocation.Latitude,
-		PickUpLongitude:  req.PickUpLocation.Longitude,
-		DropOffLatitude:  req.DropOffLocation.Latitude,
-		DropOffLongitude: req.DropOffLocation.Longitude,
-	})
-	if err != nil {
-		return &pb.CreateRequestResponse{
-			Status: status,
-			Error:  err.Error(),
-		}, nil
+	for _, driver := range driverRsp.Drivers {
+		status, err := s.sendNotification(ctx, driver.Phone, sendNotificationData{
+			Title: "A new passenger come to pick you up",
+			Body:  fmt.Sprintf("Passenger %v away from you", driver.Distance),
+			Data: map[string]interface{}{
+				"passenger_phone": driver.Phone,
+				"distance":        driver.Distance,
+				"pickup_lat":      req.PickUpLocation.Latitude,
+				"pickup_lng":      req.PickUpLocation.Longitude,
+				"dropoff_lat":     req.DropOffLocation.Latitude,
+				"dropoff_lng":     req.DropOffLocation.Longitude,
+			},
+		})
+		if err != nil {
+			return &pb.CreateRequestResponse{
+				Status: status,
+				Error:  err.Error(),
+			}, nil
+		}
 	}
 
 	return &pb.CreateRequestResponse{
@@ -172,6 +178,34 @@ func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest
 		return &pb.AcceptRequestResponse{
 			Status: http.StatusInternalServerError,
 			Error:  fmt.Sprintf("failed to update request status: %v", err),
+		}, nil
+	}
+
+	_, err = s.DriverSvc.UpdateDriverStatus(ctx, &client.UpdateDriverStatusRequest{
+		Phone:  req.DriverPhone,
+		Status: utils.DriverStatusInProgress,
+	})
+	if err != nil {
+		return &pb.AcceptRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to update driver status: %v", err),
+		}, nil
+	}
+
+	status, err := s.sendNotification(ctx, req.PassengerPhone, sendNotificationData{
+		Title: "Your driver is on the way",
+		Body:  "Please wait for a while",
+		Data: map[string]interface{}{
+			"driver_name":  driver.Driver.Name,
+			"driver_phone": req.DriverPhone,
+			"driver_lat":   driverLocation.Latitude,
+			"driver_lng":   driverLocation.Longitude,
+		},
+	})
+	if err != nil {
+		return &pb.AcceptRequestResponse{
+			Status: status,
+			Error:  fmt.Sprintf("failed to send notification: %v", err),
 		}, nil
 	}
 

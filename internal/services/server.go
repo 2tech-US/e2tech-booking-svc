@@ -49,15 +49,22 @@ func (s *Server) ResendNotification(ctx context.Context, passengerPhone, driverP
 		driverNearby = driverNearby[:5]
 	}
 
-	status, err := s.sendNotification(ctx, driverNearby, sendNotificationData{
-		Phone:            passengerPhone,
-		PickUpLatitude:   request.PickUpLatitude,
-		PickUpLongitude:  request.PickUpLongitude,
-		DropOffLatitude:  request.DropOffLatitude,
-		DropOffLongitude: request.DropOffLongitude,
-	})
-	if err != nil {
-		return status, fmt.Errorf("failed to send notification: %v", err)
+	for _, driver := range driverNearby {
+		status, err := s.sendNotification(ctx, driverPhone, sendNotificationData{
+			Title: "A new passenger come to pick you up",
+			Body:  fmt.Sprintf("Passenger %v away from you", driver.Distance),
+			Data: map[string]interface{}{
+				"passenger_phone": driver.Phone,
+				"distance":        driver.Distance,
+				"pickup_lat":      request.PickUpLatitude,
+				"pickup_lng":      request.PickUpLongitude,
+				"dropoff_lat":     request.DropOffLatitude,
+				"dropoff_lng":     request.DropOffLongitude,
+			},
+		})
+		if err != nil {
+			return status, fmt.Errorf("failed to send notification: %v", err)
+		}
 	}
 
 	return http.StatusOK, nil
@@ -74,42 +81,37 @@ func removeDriver(drivers []*pb.DriverNearby, driver string) []*pb.DriverNearby 
 }
 
 type sendNotificationData struct {
-	Phone            string
-	PickUpLatitude   float64
-	PickUpLongitude  float64
-	DropOffLatitude  float64
-	DropOffLongitude float64
+	Title string
+	Body  string
+
+	Data map[string]interface{}
 }
 
-func (s *Server) sendNotification(ctx context.Context, drivers []*pb.DriverNearby, data sendNotificationData) (int64, error) {
-	for _, driver := range drivers {
-		authRsp, err := s.AuthSvc.GetDeviceToken(ctx, &client.GetDeviceTokenRequest{
-			Phone: driver.Phone,
-		})
-		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("failed to get device token: %v", err)
-		}
-		if len(authRsp.Token) < 32 {
-			continue
-		}
-
-		// send notification to driver
-		_, err = s.NotificationSvc.SendNotificationV2(ctx, &client.SendNotificationRequestV2{
-			To:    authRsp.Token,
-			Title: "A new passenger come to pick you up",
-			Body:  fmt.Sprintf("Passenger %v away from you", driver.Distance),
-			Data: map[string]interface{}{
-				"passenger_phone": data.Phone,
-				"distance":        driver.Distance,
-				"pickup_lat":      data.PickUpLatitude,
-				"pickup_lng":      data.PickUpLongitude,
-				"dropoff_lat":     data.DropOffLatitude,
-				"dropoff_lng":     data.DropOffLongitude,
-			},
-		})
-		if err != nil {
-			return http.StatusInternalServerError, fmt.Errorf("failed to send notification: %v", err)
-		}
+func (s *Server) sendNotification(ctx context.Context, Phone string, data sendNotificationData) (int64, error) {
+	authRsp, err := s.AuthSvc.GetDeviceToken(ctx, &client.GetDeviceTokenRequest{
+		Phone: Phone,
+	})
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("failed to get device token: %v", err)
 	}
+	if len(authRsp.Token) < 32 {
+		return http.StatusOK, nil
+	}
+
+	// send notification to driver
+	rsp, err := s.NotificationSvc.SendNotificationV2(ctx, &client.SendNotificationRequestV2{
+		To:    authRsp.Token,
+		Title: data.Title,
+		Body:  data.Body,
+		Data:  data.Data,
+	})
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("failed to send notification: %v", err)
+	}
+
+	if rsp.Failure == 1 {
+		return http.StatusInternalServerError, fmt.Errorf("failed to send notification: %v", rsp.Error)
+	}
+
 	return http.StatusOK, nil
 }

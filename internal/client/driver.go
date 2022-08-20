@@ -58,3 +58,15 @@ func (s *DriverServiceClient) GetLocation(ctx context.Context, req *GetLocationR
 		Phone: req.Phone,
 	})
 }
+
+type UpdateDriverStatusRequest struct {
+	Phone  string
+	Status string
+}
+
+func (s *DriverServiceClient) UpdateDriverStatus(ctx context.Context, req *UpdateDriverStatusRequest) (*pb.UpdateStatusResponse, error) {
+	return s.Client.UpdateStatus(ctx, &pb.UpdateStatusRequest{
+		Phone:  req.Phone,
+		Status: req.Status,
+	})
+}
