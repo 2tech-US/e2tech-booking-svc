@@ -13,22 +13,6 @@ import (
 )
 
 func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest) (*pb.CreateRequestResponse, error) {
-	arg := db.CreateRequestParams{
-		Type:             req.Type,
-		Phone:            req.Phone,
-		PickUpLatitude:   req.PickUpLocation.Latitude,
-		PickUpLongitude:  req.PickUpLocation.Longitude,
-		DropOffLatitude:  req.DropOffLocation.Latitude,
-		DropOffLongitude: req.DropOffLocation.Longitude,
-	}
-
-	_, err := s.DB.CreateRequest(ctx, arg)
-	if err != nil {
-		return &pb.CreateRequestResponse{
-			Status: http.StatusInternalServerError,
-			Error:  fmt.Sprintf("failed to create request: %v", err),
-		}, nil
-	}
 
 	driverRsp, err := s.DriverSvc.GetDriverNearby(ctx, &client.GetDriverNearbyRequest{
 		Latitude:        req.PickUpLocation.Latitude,
@@ -39,6 +23,30 @@ func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest
 		return &pb.CreateRequestResponse{
 			Status: http.StatusInternalServerError,
 			Error:  fmt.Sprintf("failed to get driver nearby: %v", err),
+		}, nil
+	}
+
+	if len(driverRsp.Drivers) == 0 {
+		return &pb.CreateRequestResponse{
+			Status: http.StatusNotFound,
+			Error:  "no driver found",
+		}, nil
+	}
+
+	arg := db.CreateRequestParams{
+		Type:             req.Type,
+		Phone:            req.Phone,
+		PickUpLatitude:   req.PickUpLocation.Latitude,
+		PickUpLongitude:  req.PickUpLocation.Longitude,
+		DropOffLatitude:  req.DropOffLocation.Latitude,
+		DropOffLongitude: req.DropOffLocation.Longitude,
+	}
+
+	_, err = s.DB.CreateRequest(ctx, arg)
+	if err != nil {
+		return &pb.CreateRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to create request: %v", err),
 		}, nil
 	}
 
@@ -73,6 +81,14 @@ func (s *Server) CloseRequest(ctx context.Context, req *pb.CloseRequestRequest) 
 		return &pb.CloseRequestResponse{
 			Status: http.StatusInternalServerError,
 			Error:  fmt.Sprintf("failed to get request: %v", err),
+		}, nil
+	}
+
+	err = s.DB.DeleteResponseByRequestID(ctx, request.ID)
+	if err != nil {
+		return &pb.CloseRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to delete response: %v", err),
 		}, nil
 	}
 
@@ -186,7 +202,7 @@ func (s *Server) RejectRequest(ctx context.Context, req *pb.RejectRequestRequest
 		}, nil
 	}
 
-	status, err := s.updateNotificationRejected(ctx, req.PassengerPhone, req.DriverPhone)
+	status, err := s.updateNotificationRejected(ctx, request.ID, req.DriverPhone)
 	if err != nil {
 		return &pb.RejectRequestResponse{
 			Status: status,
@@ -207,13 +223,25 @@ func (s *Server) RejectRequest(ctx context.Context, req *pb.RejectRequestRequest
 	}, nil
 }
 
-func (s *Server) updateNotificationRejected(ctx context.Context, passengerPhone, driverPhone string) (int64, error) {
-	notificationRejected, err := s.DB.GetNotificationSentByPassengerPhone(ctx, passengerPhone)
+func (s *Server) updateNotificationRejected(ctx context.Context, requestID int64, driverPhone string) (int64, error) {
+	var driversRejected []string
+	notificationRejected, err := s.DB.GetNotificationSentByRequestID(ctx, requestID)
 	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("failed to get notification sent: %v", err)
+		if err != sql.ErrNoRows {
+			return http.StatusInternalServerError, fmt.Errorf("failed to get notification sent: %v", err)
+		}
+		driversRejected = []string{driverPhone}
+		_, err = s.DB.CreateNotificationSent(ctx, db.CreateNotificationSentParams{
+			RequestID:           requestID,
+			DriverPhoneRejected: driversRejected,
+		})
+		if err != nil {
+			return http.StatusInternalServerError, fmt.Errorf("failed to create notification sent: %v", err)
+		}
+		return http.StatusOK, nil
 	}
 
-	driversRejected := notificationRejected.DriverPhoneRejected
+	driversRejected = notificationRejected.DriverPhoneRejected
 	driversRejected = append(driversRejected, driverPhone)
 
 	_, err = s.DB.UpdateNotificationSent(ctx, db.UpdateNotificationSentParams{

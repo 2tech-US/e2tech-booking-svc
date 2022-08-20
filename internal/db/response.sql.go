@@ -63,6 +63,16 @@ func (q *Queries) DeleteResponse(ctx context.Context, driverPhone string) error 
 	return err
 }
 
+const deleteResponseByRequestID = `-- name: DeleteResponseByRequestID :exec
+DELETE FROM response
+WHERE request_id = $1
+`
+
+func (q *Queries) DeleteResponseByRequestID(ctx context.Context, requestID int64) error {
+	_, err := q.db.ExecContext(ctx, deleteResponseByRequestID, requestID)
+	return err
+}
+
 const getResponse = `-- name: GetResponse :one
 SELECT id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, created_at FROM response
 WHERE id = $1 LIMIT 1

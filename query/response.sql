@@ -39,3 +39,7 @@ RETURNING *;
 -- name: DeleteResponse :exec
 DELETE FROM response
 WHERE driver_phone = $1;
+
+-- name: DeleteResponseByRequestID :exec
+DELETE FROM response
+WHERE request_id = $1;

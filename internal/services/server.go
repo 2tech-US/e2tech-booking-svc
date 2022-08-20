@@ -43,9 +43,7 @@ func (s *Server) ResendNotification(ctx context.Context, passengerPhone, driverP
 	for _, driver := range notificationRejected.DriverPhoneRejected {
 		driverNearby = removeDriver(driverNearby, driver)
 	}
-	if len(driverNearby) == 0 {
-		return http.StatusBadRequest, fmt.Errorf("no driver nearby")
-	}
+
 	// limit by 5
 	if len(driverNearby) > 5 {
 		driverNearby = driverNearby[:5]
