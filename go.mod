@@ -12,6 +12,7 @@ require (
 )
 
 require (
+	github.com/appleboy/go-fcm v0.1.5 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

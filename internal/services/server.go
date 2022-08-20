@@ -17,7 +17,7 @@ type Server struct {
 	AuthSvc         *client.AuthServiceClient
 	PassengerSvc    *client.PassengerServiceClient
 	DriverSvc       *client.DriverServiceClient
-	NotificationSvc *client.NotificationServiceClient
+	NotificationSvc *client.NotificationServiceClientV2
 	pb.UnimplementedBookingServiceServer
 }
 
@@ -89,14 +89,15 @@ func (s *Server) sendNotification(ctx context.Context, drivers []*pb.DriverNearb
 		if err != nil {
 			return http.StatusInternalServerError, fmt.Errorf("failed to get device token: %v", err)
 		}
-		if authRsp.Token == "" {
-			return http.StatusInternalServerError, fmt.Errorf("failed to get device token: token is empty")
+		if len(authRsp.Token) < 32 {
+			continue
 		}
 
 		// send notification to driver
-		_, err = s.NotificationSvc.SendNotification(ctx, &client.SendNotificationRequest{
-			Tokens:  []string{authRsp.Token},
-			Message: "You have a new passenger",
+		_, err = s.NotificationSvc.SendNotificationV2(ctx, &client.SendNotificationRequestV2{
+			To:    authRsp.Token,
+			Title: "A new passenger come to pick you up",
+			Body:  fmt.Sprintf("Passenger %v away from you", driver.Distance),
 			Data: map[string]interface{}{
 				"passenger_phone": data.Phone,
 				"distance":        driver.Distance,

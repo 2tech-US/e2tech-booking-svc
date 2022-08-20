@@ -39,9 +39,8 @@ func main() {
 	driverSvc := &client.DriverServiceClient{
 		Client: client.InitDriverServiceClient(&c),
 	}
-	notificationSvc := &client.NotificationServiceClient{
-		Client: client.InitNotificationServiceClient(&c),
-		ApiKey: c.FirebaseApiKey,
+	notificationSvc := &client.NotificationServiceClientV2{
+		Client: client.InitNotificationServiceClientV2(&c),
 	}
 
 	s := services.Server{
