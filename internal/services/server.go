@@ -36,7 +36,7 @@ func (s *Server) ResendNotification(ctx context.Context, passengerPhone, driverP
 		return http.StatusBadGateway, fmt.Errorf("failed to get driver nearby: %v", err)
 	}
 	driverNearby := driverRsp.Drivers
-	notificationRejected, err := s.DB.GetNotificationSentByPassengerPhone(ctx, driverPhone)
+	notificationRejected, err := s.DB.GetNotificationSentByPassengerPhone(ctx, passengerPhone)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("failed to get notification sent: %v", err)
 	}

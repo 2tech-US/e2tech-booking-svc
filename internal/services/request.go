@@ -175,7 +175,15 @@ func (s *Server) RejectRequest(ctx context.Context, req *pb.RejectRequestRequest
 		}, nil
 	}
 
-	status, err := s.ResendNotification(ctx, request.Phone, req.DriverPhone)
+	status, err := s.updateNotificationRejected(ctx, req.PassengerPhone, req.DriverPhone)
+	if err != nil {
+		return &pb.RejectRequestResponse{
+			Status: status,
+			Error:  err.Error(),
+		}, nil
+	}
+
+	status, err = s.ResendNotification(ctx, request.Phone, req.DriverPhone)
 	if err != nil {
 		return &pb.RejectRequestResponse{
 			Status: status,
@@ -186,4 +194,24 @@ func (s *Server) RejectRequest(ctx context.Context, req *pb.RejectRequestRequest
 	return &pb.RejectRequestResponse{
 		Status: http.StatusOK,
 	}, nil
+}
+
+func (s *Server) updateNotificationRejected(ctx context.Context, passengerPhone, driverPhone string) (int64, error) {
+	notificationRejected, err := s.DB.GetNotificationSentByPassengerPhone(ctx, passengerPhone)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("failed to get notification sent: %v", err)
+	}
+
+	driversRejected := notificationRejected.DriverPhoneRejected
+	driversRejected = append(driversRejected, driverPhone)
+
+	_, err = s.DB.UpdateNotificationSent(ctx, db.UpdateNotificationSentParams{
+		RequestID:           notificationRejected.RequestID,
+		DriverPhoneRejected: driversRejected,
+	})
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("failed to update notification sent: %v", err)
+	}
+
+	return http.StatusOK, nil
 }
