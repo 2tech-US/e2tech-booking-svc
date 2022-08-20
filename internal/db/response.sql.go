@@ -15,10 +15,11 @@ const createResponse = `-- name: CreateResponse :one
 INSERT INTO response (
   request_id,
   driver_phone,
+  driver_name,
   driver_latitude,
   driver_longitude
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, created_at
 `
@@ -26,6 +27,7 @@ RETURNING id, request_id, driver_phone, driver_name, driver_latitude, driver_lon
 type CreateResponseParams struct {
 	RequestID       int64   `json:"request_id"`
 	DriverPhone     string  `json:"driver_phone"`
+	DriverName      string  `json:"driver_name"`
 	DriverLatitude  float64 `json:"driver_latitude"`
 	DriverLongitude float64 `json:"driver_longitude"`
 }
@@ -34,6 +36,7 @@ func (q *Queries) CreateResponse(ctx context.Context, arg CreateResponseParams) 
 	row := q.db.QueryRowContext(ctx, createResponse,
 		arg.RequestID,
 		arg.DriverPhone,
+		arg.DriverName,
 		arg.DriverLatitude,
 		arg.DriverLongitude,
 	)

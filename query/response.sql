@@ -2,10 +2,11 @@
 INSERT INTO response (
   request_id,
   driver_phone,
+  driver_name,
   driver_latitude,
   driver_longitude
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING *;
 

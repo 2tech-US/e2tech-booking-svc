@@ -96,7 +96,7 @@ func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest
 		if err == sql.ErrNoRows {
 			return &pb.AcceptRequestResponse{
 				Status: http.StatusNotFound,
-				Error:  "request is accepted or closed: %v",
+				Error:  "request not found: %v",
 			}, nil
 		}
 		return &pb.AcceptRequestResponse{
@@ -112,7 +112,7 @@ func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest
 		}, nil
 	}
 
-	driver, err := s.DriverSvc.GetLocation(ctx, &client.GetLocationRequest{
+	driverLocation, err := s.DriverSvc.GetLocation(ctx, &client.GetLocationRequest{
 		Phone: req.DriverPhone,
 	})
 	if err != nil {
@@ -122,11 +122,22 @@ func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest
 		}, nil
 	}
 
+	driver, err := s.DriverSvc.GetDriver(ctx, &client.GetDriverRequest{
+		Phone: req.DriverPhone,
+	})
+	if err != nil {
+		return &pb.AcceptRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to get driver: %v", err),
+		}, nil
+	}
+
 	arg := db.CreateResponseParams{
 		RequestID:       request.ID,
+		DriverName:      driver.Driver.Name,
 		DriverPhone:     req.DriverPhone,
-		DriverLatitude:  driver.Latitude,
-		DriverLongitude: driver.Longitude,
+		DriverLatitude:  driverLocation.Latitude,
+		DriverLongitude: driverLocation.Longitude,
 	}
 
 	_, err = s.DB.CreateResponse(ctx, arg)
