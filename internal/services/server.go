@@ -87,7 +87,7 @@ type sendNotificationData struct {
 	Data map[string]interface{}
 }
 
-func (s *Server) sendNotification(ctx context.Context, Phone string, data sendNotificationData) (int64, error) {
+func (s *Server) sendNotification(ctx context.Context, Phone string, req sendNotificationData) (int64, error) {
 	authRsp, err := s.AuthSvc.GetDeviceToken(ctx, &client.GetDeviceTokenRequest{
 		Phone: Phone,
 	})
@@ -101,9 +101,9 @@ func (s *Server) sendNotification(ctx context.Context, Phone string, data sendNo
 	// send notification to driver
 	rsp, err := s.NotificationSvc.SendNotificationV2(ctx, &client.SendNotificationRequestV2{
 		To:    authRsp.Token,
-		Title: data.Title,
-		Body:  data.Body,
-		Data:  data.Data,
+		Title: req.Title,
+		Body:  req.Body,
+		Data:  req.Data,
 	})
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("failed to send notification: %v", err)
