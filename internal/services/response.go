@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/lntvan166/e2tech-booking-svc/internal/pb"
+	"github.com/lntvan166/e2tech-booking-svc/internal/utils"
 )
 
 func (s *Server) GetResponse(ctx context.Context, req *pb.GetResponseRequest) (*pb.GetResponseResponse, error) {
@@ -50,5 +51,30 @@ func (s *Server) GetResponse(ctx context.Context, req *pb.GetResponseRequest) (*
 	return &pb.GetResponseResponse{
 		Status: http.StatusOK,
 		Driver: dataRsp,
+	}, nil
+}
+
+func (s *Server) CompleteTrip(ctx context.Context, req *pb.CompleteTripRequest) (*pb.CompleteTripResponse, error) {
+	history, err := s.DB.MakeHistory(ctx, req.PassengerPhone, req.DriverPhone)
+	if err != nil {
+		return &pb.CompleteTripResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to make history: %v", err),
+		}, nil
+	}
+
+	if history.Type == utils.RequestTypeApp {
+		s.sendNotification(ctx, history.PassengerPhone, sendNotificationData{
+			Title: "Trip Completed",
+			Body:  "Your trip has been completed",
+			Data: map[string]interface{}{
+				"price":        history.Price,
+				"driver_phone": history.DriverPhone,
+			},
+		})
+	}
+
+	return &pb.CompleteTripResponse{
+		Status: http.StatusOK,
 	}, nil
 }

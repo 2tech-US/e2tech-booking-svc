@@ -9,8 +9,11 @@ import (
 
 const dbDriver = "postgres"
 
+var db *sql.DB
+
 func Connect(dbUrl string) *Queries {
-	db, err := sql.Open(dbDriver, dbUrl)
+	var err error
+	db, err = sql.Open(dbDriver, dbUrl)
 	if err != nil {
 		log.Fatal("Failed to connect to db:", err)
 	}

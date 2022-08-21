@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/kelvins/geocoder"
@@ -56,4 +57,14 @@ func AddressToLocation(address Address) (Location, error) {
 		Latitude:  geLocation.Latitude,
 		Longitude: geLocation.Longitude,
 	}, nil
+}
+
+const grabPrice = 0.68
+
+func CalculatePrice(pickup_lat, pickup_lng, dropoff_lat, dropoff_lng float64) float64 {
+	distance := math.Sqrt(
+		math.Pow((pickup_lat-dropoff_lat)*69.1, 2) +
+			math.Pow((pickup_lng-dropoff_lng*69.1*math.Cos(pickup_lat/57.3)), 2),
+	)
+	return distance * grabPrice
 }

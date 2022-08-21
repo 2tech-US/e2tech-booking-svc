@@ -19,12 +19,13 @@ INSERT INTO history (
   pick_up_longitude,
   drop_off_latitude,
   drop_off_longitude,
+  price,
   created_at,
   done_at
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
-RETURNING id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at
+RETURNING id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at
 `
 
 type CreateHistoryParams struct {
@@ -35,6 +36,7 @@ type CreateHistoryParams struct {
 	PickUpLongitude  float64   `json:"pick_up_longitude"`
 	DropOffLatitude  float64   `json:"drop_off_latitude"`
 	DropOffLongitude float64   `json:"drop_off_longitude"`
+	Price            float64   `json:"price"`
 	CreatedAt        time.Time `json:"created_at"`
 	DoneAt           time.Time `json:"done_at"`
 }
@@ -48,6 +50,7 @@ func (q *Queries) CreateHistory(ctx context.Context, arg CreateHistoryParams) (H
 		arg.PickUpLongitude,
 		arg.DropOffLatitude,
 		arg.DropOffLongitude,
+		arg.Price,
 		arg.CreatedAt,
 		arg.DoneAt,
 	)
@@ -61,6 +64,7 @@ func (q *Queries) CreateHistory(ctx context.Context, arg CreateHistoryParams) (H
 		&i.PickUpLongitude,
 		&i.DropOffLatitude,
 		&i.DropOffLongitude,
+		&i.Price,
 		&i.CreatedAt,
 		&i.DoneAt,
 	)
@@ -78,7 +82,7 @@ func (q *Queries) DeleteHistory(ctx context.Context, id int64) error {
 }
 
 const getHistory = `-- name: GetHistory :one
-SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at FROM history
 WHERE id = $1 LIMIT 1
 `
 
@@ -94,6 +98,7 @@ func (q *Queries) GetHistory(ctx context.Context, id int64) (History, error) {
 		&i.PickUpLongitude,
 		&i.DropOffLatitude,
 		&i.DropOffLongitude,
+		&i.Price,
 		&i.CreatedAt,
 		&i.DoneAt,
 	)
@@ -101,7 +106,7 @@ func (q *Queries) GetHistory(ctx context.Context, id int64) (History, error) {
 }
 
 const listHistoryByDriverPhone = `-- name: ListHistoryByDriverPhone :many
-SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at FROM history
 WHERE driver_phone = $1
 `
 
@@ -123,6 +128,7 @@ func (q *Queries) ListHistoryByDriverPhone(ctx context.Context, driverPhone stri
 			&i.PickUpLongitude,
 			&i.DropOffLatitude,
 			&i.DropOffLongitude,
+			&i.Price,
 			&i.CreatedAt,
 			&i.DoneAt,
 		); err != nil {
@@ -140,7 +146,7 @@ func (q *Queries) ListHistoryByDriverPhone(ctx context.Context, driverPhone stri
 }
 
 const listHistoryByPassengerPhone = `-- name: ListHistoryByPassengerPhone :many
-SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at FROM history
 WHERE passenger_phone = $1
 `
 
@@ -162,6 +168,7 @@ func (q *Queries) ListHistoryByPassengerPhone(ctx context.Context, passengerPhon
 			&i.PickUpLongitude,
 			&i.DropOffLatitude,
 			&i.DropOffLongitude,
+			&i.Price,
 			&i.CreatedAt,
 			&i.DoneAt,
 		); err != nil {
@@ -179,7 +186,7 @@ func (q *Queries) ListHistoryByPassengerPhone(ctx context.Context, passengerPhon
 }
 
 const listHistorys = `-- name: ListHistorys :many
-SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, created_at, done_at FROM history
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at FROM history
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -208,6 +215,7 @@ func (q *Queries) ListHistorys(ctx context.Context, arg ListHistorysParams) ([]H
 			&i.PickUpLongitude,
 			&i.DropOffLatitude,
 			&i.DropOffLongitude,
+			&i.Price,
 			&i.CreatedAt,
 			&i.DoneAt,
 		); err != nil {

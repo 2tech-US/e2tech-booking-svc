@@ -18,6 +18,7 @@ service BookingService {
   rpc AcceptRequest(AcceptRequestRequest) returns (AcceptRequestResponse) {}
   rpc RejectRequest(RejectRequestRequest) returns (RejectRequestResponse) {}
   rpc GetRequest(GetRequestRequest) returns (GetRequestResponse) {}
+  rpc CompleteTrip(CompleteTripRequest) returns (CompleteTripResponse) {}
 }
 
 message Location {
@@ -132,4 +133,14 @@ message GetRequestResponse {
   int64 status = 1;
   string error = 2;
   Request request = 3;
+}
+
+message CompleteTripRequest {
+  string driver_phone = 1;
+  string passenger_phone = 2;
+}
+
+message CompleteTripResponse {
+  int64 status = 1;
+  string error = 2;
 }

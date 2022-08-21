@@ -7,10 +7,11 @@ INSERT INTO history (
   pick_up_longitude,
   drop_off_latitude,
   drop_off_longitude,
+  price,
   created_at,
   done_at
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
 RETURNING *;
 

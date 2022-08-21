@@ -76,29 +76,7 @@ func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest
 }
 
 func (s *Server) CloseRequest(ctx context.Context, req *pb.CloseRequestRequest) (*pb.CloseRequestResponse, error) {
-	request, err := s.DB.GetRequestByPhone(ctx, req.Phone)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return &pb.CloseRequestResponse{
-				Status: http.StatusNotFound,
-				Error:  "request not found: %v",
-			}, nil
-		}
-		return &pb.CloseRequestResponse{
-			Status: http.StatusInternalServerError,
-			Error:  fmt.Sprintf("failed to get request: %v", err),
-		}, nil
-	}
-
-	err = s.DB.DeleteResponseByRequestID(ctx, request.ID)
-	if err != nil {
-		return &pb.CloseRequestResponse{
-			Status: http.StatusInternalServerError,
-			Error:  fmt.Sprintf("failed to delete response: %v", err),
-		}, nil
-	}
-
-	err = s.DB.DeleteRequest(ctx, request.Phone)
+	err := s.DB.CloseRequest(ctx, req.Phone)
 	if err != nil {
 		return &pb.CloseRequestResponse{
 			Status: http.StatusInternalServerError,

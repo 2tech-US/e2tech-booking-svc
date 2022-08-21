@@ -32,6 +32,7 @@ type BookingServiceClient interface {
 	AcceptRequest(ctx context.Context, in *AcceptRequestRequest, opts ...grpc.CallOption) (*AcceptRequestResponse, error)
 	RejectRequest(ctx context.Context, in *RejectRequestRequest, opts ...grpc.CallOption) (*RejectRequestResponse, error)
 	GetRequest(ctx context.Context, in *GetRequestRequest, opts ...grpc.CallOption) (*GetRequestResponse, error)
+	CompleteTrip(ctx context.Context, in *CompleteTripRequest, opts ...grpc.CallOption) (*CompleteTripResponse, error)
 }
 
 type bookingServiceClient struct {
@@ -114,6 +115,15 @@ func (c *bookingServiceClient) GetRequest(ctx context.Context, in *GetRequestReq
 	return out, nil
 }
 
+func (c *bookingServiceClient) CompleteTrip(ctx context.Context, in *CompleteTripRequest, opts ...grpc.CallOption) (*CompleteTripResponse, error) {
+	out := new(CompleteTripResponse)
+	err := c.cc.Invoke(ctx, "/passenger.BookingService/CompleteTrip", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BookingServiceServer is the server API for BookingService service.
 // All implementations must embed UnimplementedBookingServiceServer
 // for forward compatibility
@@ -128,6 +138,7 @@ type BookingServiceServer interface {
 	AcceptRequest(context.Context, *AcceptRequestRequest) (*AcceptRequestResponse, error)
 	RejectRequest(context.Context, *RejectRequestRequest) (*RejectRequestResponse, error)
 	GetRequest(context.Context, *GetRequestRequest) (*GetRequestResponse, error)
+	CompleteTrip(context.Context, *CompleteTripRequest) (*CompleteTripResponse, error)
 	mustEmbedUnimplementedBookingServiceServer()
 }
 
@@ -158,6 +169,9 @@ func (UnimplementedBookingServiceServer) RejectRequest(context.Context, *RejectR
 }
 func (UnimplementedBookingServiceServer) GetRequest(context.Context, *GetRequestRequest) (*GetRequestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRequest not implemented")
+}
+func (UnimplementedBookingServiceServer) CompleteTrip(context.Context, *CompleteTripRequest) (*CompleteTripResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CompleteTrip not implemented")
 }
 func (UnimplementedBookingServiceServer) mustEmbedUnimplementedBookingServiceServer() {}
 
@@ -316,6 +330,24 @@ func _BookingService_GetRequest_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BookingService_CompleteTrip_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteTripRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BookingServiceServer).CompleteTrip(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/passenger.BookingService/CompleteTrip",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BookingServiceServer).CompleteTrip(ctx, req.(*CompleteTripRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BookingService_ServiceDesc is the grpc.ServiceDesc for BookingService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -354,6 +386,10 @@ var BookingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRequest",
 			Handler:    _BookingService_GetRequest_Handler,
+		},
+		{
+			MethodName: "CompleteTrip",
+			Handler:    _BookingService_CompleteTrip_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
