@@ -9,4 +9,8 @@ const (
 	DriverStatusFinding    = "finding"
 	DriverStatusInProgress = "inprogress"
 	DriverStatusOffline    = "offline"
+
+	// request type
+	RequestTypeApp  = "app"
+	RequestTypeCall = "call"
 )
