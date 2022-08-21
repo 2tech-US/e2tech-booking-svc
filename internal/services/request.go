@@ -89,7 +89,6 @@ func (s *Server) CloseRequest(ctx context.Context, req *pb.CloseRequestRequest) 
 	}, nil
 }
 
-// TODO driver service
 func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest) (*pb.AcceptRequestResponse, error) {
 	request, err := s.DB.GetRequestByPhone(ctx, req.PassengerPhone)
 	if err != nil {

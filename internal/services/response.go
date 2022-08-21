@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/lntvan166/e2tech-booking-svc/internal/client"
+	"github.com/lntvan166/e2tech-booking-svc/internal/db"
 	"github.com/lntvan166/e2tech-booking-svc/internal/pb"
 	"github.com/lntvan166/e2tech-booking-svc/internal/utils"
 )
@@ -74,7 +76,57 @@ func (s *Server) CompleteTrip(ctx context.Context, req *pb.CompleteTripRequest) 
 		})
 	}
 
+	rsp, err := s.DriverSvc.UpdateDriverStatus(ctx, &client.UpdateDriverStatusRequest{
+		Phone:  history.DriverPhone,
+		Status: utils.DriverStatusFinding,
+	})
+	if err != nil {
+		return &pb.CompleteTripResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to update driver status: %v", err),
+		}, nil
+	}
+	if rsp.Status != http.StatusOK {
+		return &pb.CompleteTripResponse{
+			Status: rsp.Status,
+			Error:  rsp.Error,
+		}, nil
+	}
+
 	return &pb.CompleteTripResponse{
+		Status: http.StatusOK,
+	}, nil
+}
+
+// todo update response location
+func (s *Server) UpdateResponse(ctx context.Context, req *pb.UpdateResponseRequest) (*pb.UpdateResponseResponse, error) {
+	response, err := s.DB.GetResponseByPassengerPhone(ctx, req.PassengerPhone)
+	if err != nil {
+		return &pb.UpdateResponseResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to get response: %v", err),
+		}, nil
+	}
+	if response.DriverPhone != req.DriverPhone {
+		return &pb.UpdateResponseResponse{
+			Status: http.StatusBadRequest,
+			Error:  "driver phone not match",
+		}, nil
+	}
+	_, err = s.DB.UpdateResponse(ctx, db.UpdateResponseParams{
+		ID:              response.ID,
+		DriverPhone:     req.DriverPhone,
+		DriverLatitude:  req.Latitude,
+		DriverLongitude: req.Longitude,
+	})
+	if err != nil {
+		return &pb.UpdateResponseResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to update response: %v", err),
+		}, nil
+	}
+
+	return &pb.UpdateResponseResponse{
 		Status: http.StatusOK,
 	}, nil
 }
