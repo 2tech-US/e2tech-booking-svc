@@ -98,10 +98,15 @@ func (s *Server) CompleteTrip(ctx context.Context, req *pb.CompleteTripRequest) 
 	}, nil
 }
 
-// todo update response location
 func (s *Server) UpdateResponse(ctx context.Context, req *pb.UpdateResponseRequest) (*pb.UpdateResponseResponse, error) {
-	response, err := s.DB.GetResponseByPassengerPhone(ctx, req.PassengerPhone)
+	response, err := s.DB.GetResponseByDriverPhone(ctx, req.DriverPhone)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return &pb.UpdateResponseResponse{
+				Status: http.StatusNotFound,
+				Error:  "response not found",
+			}, nil
+		}
 		return &pb.UpdateResponseResponse{
 			Status: http.StatusInternalServerError,
 			Error:  fmt.Sprintf("failed to get response: %v", err),

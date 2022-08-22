@@ -25,6 +25,12 @@ func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest
 			Error:  fmt.Sprintf("failed to get driver nearby: %v", err),
 		}, nil
 	}
+	if driverRsp.Status != http.StatusOK {
+		return &pb.CreateRequestResponse{
+			Status: driverRsp.Status,
+			Error:  driverRsp.Error,
+		}, nil
+	}
 
 	if len(driverRsp.Drivers) == 0 {
 		return &pb.CreateRequestResponse{
@@ -120,6 +126,12 @@ func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest
 			Error:  fmt.Sprintf("failed to get driver location: %v", err),
 		}, nil
 	}
+	if driverLocation.Status != http.StatusOK {
+		return &pb.AcceptRequestResponse{
+			Status: driverLocation.Status,
+			Error:  fmt.Sprintf("failed to get driver location: %v", driverLocation.Error),
+		}, nil
+	}
 
 	driver, err := s.DriverSvc.GetDriver(ctx, &client.GetDriverRequest{
 		Phone: req.DriverPhone,
@@ -128,6 +140,12 @@ func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest
 		return &pb.AcceptRequestResponse{
 			Status: http.StatusInternalServerError,
 			Error:  fmt.Sprintf("failed to get driver: %v", err),
+		}, nil
+	}
+	if driver.Status != http.StatusOK {
+		return &pb.AcceptRequestResponse{
+			Status: driver.Status,
+			Error:  fmt.Sprintf("failed to get driver: %v", driver.Error),
 		}, nil
 	}
 
@@ -158,7 +176,7 @@ func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest
 		}, nil
 	}
 
-	_, err = s.DriverSvc.UpdateDriverStatus(ctx, &client.UpdateDriverStatusRequest{
+	updateDriverRes, err := s.DriverSvc.UpdateDriverStatus(ctx, &client.UpdateDriverStatusRequest{
 		Phone:  req.DriverPhone,
 		Status: utils.DriverStatusInProgress,
 	})
@@ -166,6 +184,12 @@ func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest
 		return &pb.AcceptRequestResponse{
 			Status: http.StatusInternalServerError,
 			Error:  fmt.Sprintf("failed to update driver status: %v", err),
+		}, nil
+	}
+	if updateDriverRes.Status != http.StatusOK {
+		return &pb.AcceptRequestResponse{
+			Status: updateDriverRes.Status,
+			Error:  fmt.Sprintf("failed to update driver status: %v", updateDriverRes.Error),
 		}, nil
 	}
 

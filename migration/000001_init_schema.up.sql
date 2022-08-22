@@ -14,7 +14,7 @@ CREATE TABLE "request" (
 CREATE TABLE "response" (
   "id" bigserial PRIMARY KEY,
   "request_id" bigint NOT NULL,
-  "driver_phone" varchar NOT NULL DEFAULT 0,
+  "driver_phone" varchar UNIQUE NOT NULL,
   "driver_name" varchar NOT NULL,
   "driver_latitude" float8 NOT NULL,
   "driver_longitude" float8 NOT NULL,

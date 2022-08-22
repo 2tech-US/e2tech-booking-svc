@@ -148,9 +148,8 @@ message CompleteTripResponse {
 
 message UpdateResponseRequest {
   string driver_phone = 1;
-  string passenger_phone = 2;
-  double latitude = 3;
-  double longitude = 4;
+  double latitude = 2;
+  double longitude = 3;
 }
 
 message UpdateResponseResponse {

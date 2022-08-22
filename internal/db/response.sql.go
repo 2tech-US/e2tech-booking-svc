@@ -93,6 +93,26 @@ func (q *Queries) GetResponse(ctx context.Context, id int64) (Response, error) {
 	return i, err
 }
 
+const getResponseByDriverPhone = `-- name: GetResponseByDriverPhone :one
+SELECT id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, created_at FROM response 
+WHERE driver_phone = $1 LIMIT 1
+`
+
+func (q *Queries) GetResponseByDriverPhone(ctx context.Context, driverPhone string) (Response, error) {
+	row := q.db.QueryRowContext(ctx, getResponseByDriverPhone, driverPhone)
+	var i Response
+	err := row.Scan(
+		&i.ID,
+		&i.RequestID,
+		&i.DriverPhone,
+		&i.DriverName,
+		&i.DriverLatitude,
+		&i.DriverLongitude,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getResponseByPassengerPhone = `-- name: GetResponseByPassengerPhone :one
 SELECT response.id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, response.created_at, request.id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, request.created_at, expire_at FROM response JOIN request ON request.id = response.request_id
 WHERE request.phone = $1 LIMIT 1

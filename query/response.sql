@@ -22,6 +22,10 @@ WHERE request_id = $1 LIMIT 1;
 SELECT * FROM response JOIN request ON request.id = response.request_id
 WHERE request.phone = $1 LIMIT 1;
 
+-- name: GetResponseByDriverPhone :one
+SELECT * FROM response 
+WHERE driver_phone = $1 LIMIT 1;
+
 -- name: ListResponses :many
 SELECT * FROM response
 ORDER BY id
