@@ -75,7 +75,8 @@ message History {
 }
 
 message ListHistoryRequest {
-  string passenger_phone = 1;
+  string phone = 1;
+  string role = 2;
 }
 
 message ListHistoryResponse {

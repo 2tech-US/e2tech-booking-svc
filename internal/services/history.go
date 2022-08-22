@@ -5,17 +5,32 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/lntvan166/e2tech-booking-svc/internal/db"
 	"github.com/lntvan166/e2tech-booking-svc/internal/pb"
 	"github.com/lntvan166/e2tech-booking-svc/internal/utils"
 )
 
 func (s *Server) ListHistory(ctx context.Context, req *pb.ListHistoryRequest) (*pb.ListHistoryResponse, error) {
-	histories, err := s.DB.ListHistoryByPassengerPhone(ctx, req.PassengerPhone)
-	if err != nil {
-		return &pb.ListHistoryResponse{
-			Status: http.StatusInternalServerError,
-			Error:  fmt.Sprintf("failed to list history: %v", err),
-		}, nil
+	histories := []db.History{}
+	if req.Role == utils.PASSENGER {
+		var err error
+		histories, err = s.DB.ListHistoryByPassengerPhone(ctx, req.Phone)
+		if err != nil {
+			return &pb.ListHistoryResponse{
+				Status: http.StatusInternalServerError,
+				Error:  fmt.Sprintf("failed to list history: %v", err),
+			}, nil
+		}
+	}
+	if req.Role == utils.DRIVER {
+		var err error
+		histories, err = s.DB.ListHistoryByDriverPhone(ctx, req.Phone)
+		if err != nil {
+			return &pb.ListHistoryResponse{
+				Status: http.StatusInternalServerError,
+				Error:  fmt.Sprintf("failed to list history: %v", err),
+			}, nil
+		}
 	}
 
 	dataRsp := make([]*pb.History, len(histories))
