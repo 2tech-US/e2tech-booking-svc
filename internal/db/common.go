@@ -50,6 +50,10 @@ func (q *Queries) MakeHistory(ctx context.Context, passengerPhone, driverPhone s
 	if err != nil {
 		return History{}, err
 	}
+	err = qtx.DeleteResponse(ctx, response.DriverPhone)
+	if err != nil {
+		return History{}, err
+	}
 	err = qtx.DeleteRequest(ctx, request.Phone)
 	if err != nil {
 		return History{}, err

@@ -66,5 +66,9 @@ func CalculatePrice(pickup_lat, pickup_lng, dropoff_lat, dropoff_lng float64) fl
 		math.Pow((pickup_lat-dropoff_lat)*69.1, 2) +
 			math.Pow((pickup_lng-dropoff_lng*69.1*math.Cos(pickup_lat/57.3)), 2),
 	)
-	return distance * grabPrice
+	return math.Round(distance*grabPrice*100) / 100
+}
+
+func RoundDistance(distance float64) float64 {
+	return math.Round(distance*100) / 100
 }

@@ -58,10 +58,10 @@ func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest
 	for _, driver := range driverRsp.Drivers {
 		status, err := s.sendNotification(ctx, driver.Phone, sendNotificationData{
 			Title: "A new passenger come to pick you up",
-			Body:  fmt.Sprintf("Passenger %v away from you", driver.Distance),
+			Body:  fmt.Sprintf("Passenger %v miles away from you", utils.RoundDistance(driver.Distance)),
 			Data: map[string]interface{}{
 				"passenger_phone": driver.Phone,
-				"distance":        driver.Distance,
+				"distance":        utils.RoundDistance(driver.Distance),
 				"pickup_lat":      req.PickUpLocation.Latitude,
 				"pickup_lng":      req.PickUpLocation.Longitude,
 				"dropoff_lat":     req.DropOffLocation.Latitude,
@@ -198,11 +198,10 @@ func (s *Server) AcceptRequest(ctx context.Context, req *pb.AcceptRequestRequest
 			Title: "Your driver is on the way",
 			Body:  "Please wait for a while",
 			Data: map[string]interface{}{
-				"driver_name": driver.Driver.Name,
-				"driver_phone":// Used to update the notification sent table.
-				req.DriverPhone,
-				"driver_lat": driverLocation.Latitude,
-				"driver_lng": driverLocation.Longitude,
+				"driver_name":  driver.Driver.Name,
+				"driver_phone": req.DriverPhone,
+				"driver_lat":   driverLocation.Latitude,
+				"driver_lng":   driverLocation.Longitude,
 			},
 		})
 		if err != nil {

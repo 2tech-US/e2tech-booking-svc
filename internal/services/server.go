@@ -9,6 +9,7 @@ import (
 	"github.com/lntvan166/e2tech-booking-svc/internal/config"
 	"github.com/lntvan166/e2tech-booking-svc/internal/db"
 	"github.com/lntvan166/e2tech-booking-svc/internal/pb"
+	"github.com/lntvan166/e2tech-booking-svc/internal/utils"
 )
 
 type Server struct {
@@ -52,10 +53,10 @@ func (s *Server) ResendNotification(ctx context.Context, passengerPhone, driverP
 	for _, driver := range driverNearby {
 		status, err := s.sendNotification(ctx, driverPhone, sendNotificationData{
 			Title: "A new passenger come to pick you up",
-			Body:  fmt.Sprintf("Passenger %v away from you", driver.Distance),
+			Body:  fmt.Sprintf("Passenger %v miles away from you", utils.RoundDistance(driver.Distance)),
 			Data: map[string]interface{}{
 				"passenger_phone": driver.Phone,
-				"distance":        driver.Distance,
+				"distance":        utils.RoundDistance(driver.Distance),
 				"pickup_lat":      request.PickUpLatitude,
 				"pickup_lng":      request.PickUpLongitude,
 				"dropoff_lat":     request.DropOffLatitude,
