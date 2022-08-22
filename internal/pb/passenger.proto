@@ -23,6 +23,7 @@ message Passenger {
 
 message CreatePassengerRequest {
   string phone = 1;
+  string name = 2;
 }
 
 message CreatePassengerResponse {
@@ -56,10 +57,9 @@ message ListPassengersResponse {
 }
 
 message UpdatePassengerRequest {
-  int64 id = 1;
-  string phone = 2;
-  string name = 3;
-  string dateOfBirth = 4;
+  string phone = 1;
+  string name = 2;
+  string dateOfBirth = 3;
 }
 
 message UpdatePassengerResponse {
