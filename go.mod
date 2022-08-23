@@ -3,16 +3,18 @@ module github.com/lntvan166/e2tech-booking-svc
 go 1.18
 
 require (
+	github.com/appleboy/go-fcm v0.1.5
 	github.com/appleboy/gorush v1.15.0
 	github.com/kelvins/geocoder v0.0.0-20200113010004-f579500e9e27
 	github.com/lib/pq v1.10.6
 	github.com/spf13/viper v1.12.0
+	github.com/stretchr/testify v1.8.0
+	go.uber.org/multierr v1.6.0
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 )
 
 require (
-	github.com/appleboy/go-fcm v0.1.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -26,8 +28,8 @@ require (
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/subosito/gotenv v1.3.0 // indirect
+	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect

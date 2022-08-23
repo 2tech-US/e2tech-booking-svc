@@ -12,19 +12,18 @@ import (
 
 const createHistory = `-- name: CreateHistory :one
 INSERT INTO history (
-  type,
-  passenger_phone,
-  driver_phone,
-  pick_up_latitude,
-  pick_up_longitude,
-  drop_off_latitude,
-  drop_off_longitude,
-  price,
-  created_at,
-  done_at
-) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-)
+    type,
+    passenger_phone,
+    driver_phone,
+    pick_up_latitude,
+    pick_up_longitude,
+    drop_off_latitude,
+    drop_off_longitude,
+    price,
+    created_at,
+    done_at
+  )
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 RETURNING id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at
 `
 
@@ -82,8 +81,10 @@ func (q *Queries) DeleteHistory(ctx context.Context, id int64) error {
 }
 
 const getHistory = `-- name: GetHistory :one
-SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at FROM history
-WHERE id = $1 LIMIT 1
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at
+FROM history
+WHERE id = $1
+LIMIT 1
 `
 
 func (q *Queries) GetHistory(ctx context.Context, id int64) (History, error) {
@@ -106,12 +107,31 @@ func (q *Queries) GetHistory(ctx context.Context, id int64) (History, error) {
 }
 
 const listHistoryByDriverPhone = `-- name: ListHistoryByDriverPhone :many
-SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at FROM history
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at
+FROM history
 WHERE driver_phone = $1
+  AND created_at >= $4
+  AND created_at <= $5
+ORDER BY id
+LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) ListHistoryByDriverPhone(ctx context.Context, driverPhone string) ([]History, error) {
-	rows, err := q.db.QueryContext(ctx, listHistoryByDriverPhone, driverPhone)
+type ListHistoryByDriverPhoneParams struct {
+	DriverPhone string    `json:"driver_phone"`
+	Limit       int32     `json:"limit"`
+	Offset      int32     `json:"offset"`
+	StartDate   time.Time `json:"start_date"`
+	EndDate     time.Time `json:"end_date"`
+}
+
+func (q *Queries) ListHistoryByDriverPhone(ctx context.Context, arg ListHistoryByDriverPhoneParams) ([]History, error) {
+	rows, err := q.db.QueryContext(ctx, listHistoryByDriverPhone,
+		arg.DriverPhone,
+		arg.Limit,
+		arg.Offset,
+		arg.StartDate,
+		arg.EndDate,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -146,12 +166,31 @@ func (q *Queries) ListHistoryByDriverPhone(ctx context.Context, driverPhone stri
 }
 
 const listHistoryByPassengerPhone = `-- name: ListHistoryByPassengerPhone :many
-SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at FROM history
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at
+FROM history
 WHERE passenger_phone = $1
+  AND created_at >= $4
+  AND created_at <= $5
+ORDER BY id
+LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) ListHistoryByPassengerPhone(ctx context.Context, passengerPhone string) ([]History, error) {
-	rows, err := q.db.QueryContext(ctx, listHistoryByPassengerPhone, passengerPhone)
+type ListHistoryByPassengerPhoneParams struct {
+	PassengerPhone string    `json:"passenger_phone"`
+	Limit          int32     `json:"limit"`
+	Offset         int32     `json:"offset"`
+	StartDate      time.Time `json:"start_date"`
+	EndDate        time.Time `json:"end_date"`
+}
+
+func (q *Queries) ListHistoryByPassengerPhone(ctx context.Context, arg ListHistoryByPassengerPhoneParams) ([]History, error) {
+	rows, err := q.db.QueryContext(ctx, listHistoryByPassengerPhone,
+		arg.PassengerPhone,
+		arg.Limit,
+		arg.Offset,
+		arg.StartDate,
+		arg.EndDate,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -186,10 +225,10 @@ func (q *Queries) ListHistoryByPassengerPhone(ctx context.Context, passengerPhon
 }
 
 const listHistorys = `-- name: ListHistorys :many
-SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at FROM history
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at
+FROM history
 ORDER BY id
-LIMIT $1
-OFFSET $2
+LIMIT $1 OFFSET $2
 `
 
 type ListHistorysParams struct {

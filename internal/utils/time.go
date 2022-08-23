@@ -2,7 +2,7 @@ package utils
 
 import "time"
 
-var layoutDate = "2006-06-02"
+var layoutDate = "2006/01/02"
 
 func ParseStringToDate(date string) (time.Time, error) {
 	return time.Parse(layoutDate, date)
