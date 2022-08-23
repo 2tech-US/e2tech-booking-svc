@@ -106,6 +106,62 @@ func (q *Queries) GetHistory(ctx context.Context, id int64) (History, error) {
 	return i, err
 }
 
+const listHistories = `-- name: ListHistories :many
+SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at
+FROM history
+WHERE created_at >= $3
+  AND created_at <= $4
+ORDER BY id
+LIMIT $1 OFFSET $2
+`
+
+type ListHistoriesParams struct {
+	Limit     int32     `json:"limit"`
+	Offset    int32     `json:"offset"`
+	StartDate time.Time `json:"start_date"`
+	EndDate   time.Time `json:"end_date"`
+}
+
+func (q *Queries) ListHistories(ctx context.Context, arg ListHistoriesParams) ([]History, error) {
+	rows, err := q.db.QueryContext(ctx, listHistories,
+		arg.Limit,
+		arg.Offset,
+		arg.StartDate,
+		arg.EndDate,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []History
+	for rows.Next() {
+		var i History
+		if err := rows.Scan(
+			&i.ID,
+			&i.Type,
+			&i.PassengerPhone,
+			&i.DriverPhone,
+			&i.PickUpLatitude,
+			&i.PickUpLongitude,
+			&i.DropOffLatitude,
+			&i.DropOffLongitude,
+			&i.Price,
+			&i.CreatedAt,
+			&i.DoneAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listHistoryByDriverPhone = `-- name: ListHistoryByDriverPhone :many
 SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at
 FROM history
@@ -191,53 +247,6 @@ func (q *Queries) ListHistoryByPassengerPhone(ctx context.Context, arg ListHisto
 		arg.StartDate,
 		arg.EndDate,
 	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []History
-	for rows.Next() {
-		var i History
-		if err := rows.Scan(
-			&i.ID,
-			&i.Type,
-			&i.PassengerPhone,
-			&i.DriverPhone,
-			&i.PickUpLatitude,
-			&i.PickUpLongitude,
-			&i.DropOffLatitude,
-			&i.DropOffLongitude,
-			&i.Price,
-			&i.CreatedAt,
-			&i.DoneAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listHistorys = `-- name: ListHistorys :many
-SELECT id, type, passenger_phone, driver_phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, created_at, done_at
-FROM history
-ORDER BY id
-LIMIT $1 OFFSET $2
-`
-
-type ListHistorysParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
-
-func (q *Queries) ListHistorys(ctx context.Context, arg ListHistorysParams) ([]History, error) {
-	rows, err := q.db.QueryContext(ctx, listHistorys, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

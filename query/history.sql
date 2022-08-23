@@ -34,9 +34,11 @@ WHERE driver_phone = $1
   AND created_at <= sqlc.arg(end_date)
 ORDER BY id
 LIMIT $2 OFFSET $3;
--- name: ListHistorys :many
+-- name: ListHistories :many
 SELECT *
 FROM history
+WHERE created_at >= sqlc.arg(start_date)
+  AND created_at <= sqlc.arg(end_date)
 ORDER BY id
 LIMIT $1 OFFSET $2;
 -- name: DeleteHistory :exec

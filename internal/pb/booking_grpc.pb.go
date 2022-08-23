@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BookingServiceClient interface {
 	ListHistory(ctx context.Context, in *ListHistoryRequest, opts ...grpc.CallOption) (*ListHistoryResponse, error)
+	ListAllHistory(ctx context.Context, in *ListAllHistoryRequest, opts ...grpc.CallOption) (*ListAllHistoryResponse, error)
 	SendRequest(ctx context.Context, in *SendRequestRequest, opts ...grpc.CallOption) (*SendRequestResponse, error)
 	// passenger
 	CreateRequest(ctx context.Context, in *CreateRequestRequest, opts ...grpc.CallOption) (*CreateRequestResponse, error)
@@ -47,6 +48,15 @@ func NewBookingServiceClient(cc grpc.ClientConnInterface) BookingServiceClient {
 func (c *bookingServiceClient) ListHistory(ctx context.Context, in *ListHistoryRequest, opts ...grpc.CallOption) (*ListHistoryResponse, error) {
 	out := new(ListHistoryResponse)
 	err := c.cc.Invoke(ctx, "/passenger.BookingService/ListHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bookingServiceClient) ListAllHistory(ctx context.Context, in *ListAllHistoryRequest, opts ...grpc.CallOption) (*ListAllHistoryResponse, error) {
+	out := new(ListAllHistoryResponse)
+	err := c.cc.Invoke(ctx, "/passenger.BookingService/ListAllHistory", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -139,6 +149,7 @@ func (c *bookingServiceClient) UpdateResponse(ctx context.Context, in *UpdateRes
 // for forward compatibility
 type BookingServiceServer interface {
 	ListHistory(context.Context, *ListHistoryRequest) (*ListHistoryResponse, error)
+	ListAllHistory(context.Context, *ListAllHistoryRequest) (*ListAllHistoryResponse, error)
 	SendRequest(context.Context, *SendRequestRequest) (*SendRequestResponse, error)
 	// passenger
 	CreateRequest(context.Context, *CreateRequestRequest) (*CreateRequestResponse, error)
@@ -159,6 +170,9 @@ type UnimplementedBookingServiceServer struct {
 
 func (UnimplementedBookingServiceServer) ListHistory(context.Context, *ListHistoryRequest) (*ListHistoryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListHistory not implemented")
+}
+func (UnimplementedBookingServiceServer) ListAllHistory(context.Context, *ListAllHistoryRequest) (*ListAllHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAllHistory not implemented")
 }
 func (UnimplementedBookingServiceServer) SendRequest(context.Context, *SendRequestRequest) (*SendRequestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendRequest not implemented")
@@ -214,6 +228,24 @@ func _BookingService_ListHistory_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BookingServiceServer).ListHistory(ctx, req.(*ListHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BookingService_ListAllHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAllHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BookingServiceServer).ListAllHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/passenger.BookingService/ListAllHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BookingServiceServer).ListAllHistory(ctx, req.(*ListAllHistoryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -390,6 +422,10 @@ var BookingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListHistory",
 			Handler:    _BookingService_ListHistory_Handler,
+		},
+		{
+			MethodName: "ListAllHistory",
+			Handler:    _BookingService_ListAllHistory_Handler,
 		},
 		{
 			MethodName: "SendRequest",

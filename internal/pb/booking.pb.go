@@ -1500,6 +1500,140 @@ func (x *UpdateResponseResponse) GetError() string {
 	return ""
 }
 
+type ListAllHistoryRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	StartDate string `protobuf:"bytes,1,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
+	EndDate   string `protobuf:"bytes,2,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
+	Limit     int32  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset    int32  `protobuf:"varint,4,opt,name=offset,proto3" json:"offset,omitempty"`
+}
+
+func (x *ListAllHistoryRequest) Reset() {
+	*x = ListAllHistoryRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_pb_booking_proto_msgTypes[24]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListAllHistoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAllHistoryRequest) ProtoMessage() {}
+
+func (x *ListAllHistoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_pb_booking_proto_msgTypes[24]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAllHistoryRequest.ProtoReflect.Descriptor instead.
+func (*ListAllHistoryRequest) Descriptor() ([]byte, []int) {
+	return file_internal_pb_booking_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *ListAllHistoryRequest) GetStartDate() string {
+	if x != nil {
+		return x.StartDate
+	}
+	return ""
+}
+
+func (x *ListAllHistoryRequest) GetEndDate() string {
+	if x != nil {
+		return x.EndDate
+	}
+	return ""
+}
+
+func (x *ListAllHistoryRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListAllHistoryRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type ListAllHistoryResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status  int64      `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	Error   string     `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	History []*History `protobuf:"bytes,3,rep,name=history,proto3" json:"history,omitempty"`
+}
+
+func (x *ListAllHistoryResponse) Reset() {
+	*x = ListAllHistoryResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_pb_booking_proto_msgTypes[25]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListAllHistoryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAllHistoryResponse) ProtoMessage() {}
+
+func (x *ListAllHistoryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_pb_booking_proto_msgTypes[25]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAllHistoryResponse.ProtoReflect.Descriptor instead.
+func (*ListAllHistoryResponse) Descriptor() ([]byte, []int) {
+	return file_internal_pb_booking_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *ListAllHistoryResponse) GetStatus() int64 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *ListAllHistoryResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+func (x *ListAllHistoryResponse) GetHistory() []*History {
+	if x != nil {
+		return x.History
+	}
+	return nil
+}
+
 var File_internal_pb_booking_proto protoreflect.FileDescriptor
 
 var file_internal_pb_booking_proto_rawDesc = []byte{
@@ -1675,12 +1809,33 @@ var file_internal_pb_booking_proto_rawDesc = []byte{
 	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x03, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x14, 0x0a, 0x05,
 	0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x72, 0x72,
-	0x6f, 0x72, 0x32, 0xce, 0x06, 0x0a, 0x0e, 0x42, 0x6f, 0x6f, 0x6b, 0x69, 0x6e, 0x67, 0x53, 0x65,
-	0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x4e, 0x0a, 0x0b, 0x4c, 0x69, 0x73, 0x74, 0x48, 0x69, 0x73,
-	0x74, 0x6f, 0x72, 0x79, 0x12, 0x1d, 0x2e, 0x70, 0x61, 0x73, 0x73, 0x65, 0x6e, 0x67, 0x65, 0x72,
-	0x2e, 0x4c, 0x69, 0x73, 0x74, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x70, 0x61, 0x73, 0x73, 0x65, 0x6e, 0x67, 0x65, 0x72, 0x2e,
-	0x4c, 0x69, 0x73, 0x74, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6f, 0x72, 0x22, 0x7f, 0x0a, 0x15, 0x4c, 0x69, 0x73, 0x74, 0x41, 0x6c, 0x6c, 0x48, 0x69, 0x73,
+	0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x73,
+	0x74, 0x61, 0x72, 0x74, 0x5f, 0x64, 0x61, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x09, 0x73, 0x74, 0x61, 0x72, 0x74, 0x44, 0x61, 0x74, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x65, 0x6e,
+	0x64, 0x5f, 0x64, 0x61, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x65, 0x6e,
+	0x64, 0x44, 0x61, 0x74, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x6f,
+	0x66, 0x66, 0x73, 0x65, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x6f, 0x66, 0x66,
+	0x73, 0x65, 0x74, 0x22, 0x74, 0x0a, 0x16, 0x4c, 0x69, 0x73, 0x74, 0x41, 0x6c, 0x6c, 0x48, 0x69,
+	0x73, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x16, 0x0a,
+	0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x06, 0x73,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x12, 0x2c, 0x0a, 0x07, 0x68,
+	0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x70,
+	0x61, 0x73, 0x73, 0x65, 0x6e, 0x67, 0x65, 0x72, 0x2e, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79,
+	0x52, 0x07, 0x68, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x32, 0xa7, 0x07, 0x0a, 0x0e, 0x42, 0x6f,
+	0x6f, 0x6b, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x4e, 0x0a, 0x0b,
+	0x4c, 0x69, 0x73, 0x74, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x12, 0x1d, 0x2e, 0x70, 0x61,
+	0x73, 0x73, 0x65, 0x6e, 0x67, 0x65, 0x72, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x48, 0x69, 0x73, 0x74,
+	0x6f, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x70, 0x61, 0x73,
+	0x73, 0x65, 0x6e, 0x67, 0x65, 0x72, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x48, 0x69, 0x73, 0x74, 0x6f,
+	0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x57, 0x0a, 0x0e,
+	0x4c, 0x69, 0x73, 0x74, 0x41, 0x6c, 0x6c, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x12, 0x20,
+	0x2e, 0x70, 0x61, 0x73, 0x73, 0x65, 0x6e, 0x67, 0x65, 0x72, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x41,
+	0x6c, 0x6c, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x21, 0x2e, 0x70, 0x61, 0x73, 0x73, 0x65, 0x6e, 0x67, 0x65, 0x72, 0x2e, 0x4c, 0x69, 0x73,
+	0x74, 0x41, 0x6c, 0x6c, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f,
 	0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x4e, 0x0a, 0x0b, 0x53, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71,
 	0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x2e, 0x70, 0x61, 0x73, 0x73, 0x65, 0x6e, 0x67, 0x65, 0x72,
 	0x2e, 0x53, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75,
@@ -1744,7 +1899,7 @@ func file_internal_pb_booking_proto_rawDescGZIP() []byte {
 	return file_internal_pb_booking_proto_rawDescData
 }
 
-var file_internal_pb_booking_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_internal_pb_booking_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_internal_pb_booking_proto_goTypes = []interface{}{
 	(*Location)(nil),               // 0: passenger.Location
 	(*CreateRequestRequest)(nil),   // 1: passenger.CreateRequestRequest
@@ -1770,6 +1925,8 @@ var file_internal_pb_booking_proto_goTypes = []interface{}{
 	(*CompleteTripResponse)(nil),   // 21: passenger.CompleteTripResponse
 	(*UpdateResponseRequest)(nil),  // 22: passenger.UpdateResponseRequest
 	(*UpdateResponseResponse)(nil), // 23: passenger.UpdateResponseResponse
+	(*ListAllHistoryRequest)(nil),  // 24: passenger.ListAllHistoryRequest
+	(*ListAllHistoryResponse)(nil), // 25: passenger.ListAllHistoryResponse
 }
 var file_internal_pb_booking_proto_depIdxs = []int32{
 	0,  // 0: passenger.CreateRequestRequest.pick_up_location:type_name -> passenger.Location
@@ -1784,31 +1941,34 @@ var file_internal_pb_booking_proto_depIdxs = []int32{
 	0,  // 9: passenger.Request.pick_up_location:type_name -> passenger.Location
 	0,  // 10: passenger.Request.drop_off_location:type_name -> passenger.Location
 	17, // 11: passenger.GetRequestResponse.request:type_name -> passenger.Request
-	9,  // 12: passenger.BookingService.ListHistory:input_type -> passenger.ListHistoryRequest
-	11, // 13: passenger.BookingService.SendRequest:input_type -> passenger.SendRequestRequest
-	1,  // 14: passenger.BookingService.CreateRequest:input_type -> passenger.CreateRequestRequest
-	3,  // 15: passenger.BookingService.CloseRequest:input_type -> passenger.CloseRequestRequest
-	6,  // 16: passenger.BookingService.GetResponse:input_type -> passenger.GetResponseRequest
-	13, // 17: passenger.BookingService.AcceptRequest:input_type -> passenger.AcceptRequestRequest
-	15, // 18: passenger.BookingService.RejectRequest:input_type -> passenger.RejectRequestRequest
-	18, // 19: passenger.BookingService.GetRequest:input_type -> passenger.GetRequestRequest
-	20, // 20: passenger.BookingService.CompleteTrip:input_type -> passenger.CompleteTripRequest
-	22, // 21: passenger.BookingService.UpdateResponse:input_type -> passenger.UpdateResponseRequest
-	10, // 22: passenger.BookingService.ListHistory:output_type -> passenger.ListHistoryResponse
-	12, // 23: passenger.BookingService.SendRequest:output_type -> passenger.SendRequestResponse
-	2,  // 24: passenger.BookingService.CreateRequest:output_type -> passenger.CreateRequestResponse
-	4,  // 25: passenger.BookingService.CloseRequest:output_type -> passenger.CloseRequestResponse
-	7,  // 26: passenger.BookingService.GetResponse:output_type -> passenger.GetResponseResponse
-	14, // 27: passenger.BookingService.AcceptRequest:output_type -> passenger.AcceptRequestResponse
-	16, // 28: passenger.BookingService.RejectRequest:output_type -> passenger.RejectRequestResponse
-	19, // 29: passenger.BookingService.GetRequest:output_type -> passenger.GetRequestResponse
-	21, // 30: passenger.BookingService.CompleteTrip:output_type -> passenger.CompleteTripResponse
-	23, // 31: passenger.BookingService.UpdateResponse:output_type -> passenger.UpdateResponseResponse
-	22, // [22:32] is the sub-list for method output_type
-	12, // [12:22] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	8,  // 12: passenger.ListAllHistoryResponse.history:type_name -> passenger.History
+	9,  // 13: passenger.BookingService.ListHistory:input_type -> passenger.ListHistoryRequest
+	24, // 14: passenger.BookingService.ListAllHistory:input_type -> passenger.ListAllHistoryRequest
+	11, // 15: passenger.BookingService.SendRequest:input_type -> passenger.SendRequestRequest
+	1,  // 16: passenger.BookingService.CreateRequest:input_type -> passenger.CreateRequestRequest
+	3,  // 17: passenger.BookingService.CloseRequest:input_type -> passenger.CloseRequestRequest
+	6,  // 18: passenger.BookingService.GetResponse:input_type -> passenger.GetResponseRequest
+	13, // 19: passenger.BookingService.AcceptRequest:input_type -> passenger.AcceptRequestRequest
+	15, // 20: passenger.BookingService.RejectRequest:input_type -> passenger.RejectRequestRequest
+	18, // 21: passenger.BookingService.GetRequest:input_type -> passenger.GetRequestRequest
+	20, // 22: passenger.BookingService.CompleteTrip:input_type -> passenger.CompleteTripRequest
+	22, // 23: passenger.BookingService.UpdateResponse:input_type -> passenger.UpdateResponseRequest
+	10, // 24: passenger.BookingService.ListHistory:output_type -> passenger.ListHistoryResponse
+	25, // 25: passenger.BookingService.ListAllHistory:output_type -> passenger.ListAllHistoryResponse
+	12, // 26: passenger.BookingService.SendRequest:output_type -> passenger.SendRequestResponse
+	2,  // 27: passenger.BookingService.CreateRequest:output_type -> passenger.CreateRequestResponse
+	4,  // 28: passenger.BookingService.CloseRequest:output_type -> passenger.CloseRequestResponse
+	7,  // 29: passenger.BookingService.GetResponse:output_type -> passenger.GetResponseResponse
+	14, // 30: passenger.BookingService.AcceptRequest:output_type -> passenger.AcceptRequestResponse
+	16, // 31: passenger.BookingService.RejectRequest:output_type -> passenger.RejectRequestResponse
+	19, // 32: passenger.BookingService.GetRequest:output_type -> passenger.GetRequestResponse
+	21, // 33: passenger.BookingService.CompleteTrip:output_type -> passenger.CompleteTripResponse
+	23, // 34: passenger.BookingService.UpdateResponse:output_type -> passenger.UpdateResponseResponse
+	24, // [24:35] is the sub-list for method output_type
+	13, // [13:24] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_internal_pb_booking_proto_init() }
@@ -2105,6 +2265,30 @@ func file_internal_pb_booking_proto_init() {
 				return nil
 			}
 		}
+		file_internal_pb_booking_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListAllHistoryRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_pb_booking_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListAllHistoryResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -2112,7 +2296,7 @@ func file_internal_pb_booking_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_internal_pb_booking_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   24,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

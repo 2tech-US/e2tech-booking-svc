@@ -6,6 +6,7 @@ option go_package = "./internal/pb";
 
 service BookingService {
   rpc ListHistory(ListHistoryRequest) returns (ListHistoryResponse) {}
+  rpc ListAllHistory(ListAllHistoryRequest) returns (ListAllHistoryResponse) {}
   rpc SendRequest(SendRequestRequest) returns (SendRequestResponse) {}
 
   // passenger
@@ -160,4 +161,17 @@ message UpdateResponseRequest {
 message UpdateResponseResponse {
   int64 status = 1;
   string error = 2;
+}
+
+message ListAllHistoryRequest {
+  string start_date = 1;
+  string end_date = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ListAllHistoryResponse {
+  int64 status = 1;
+  string error = 2;
+  repeated History history = 3;
 }

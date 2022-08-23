@@ -82,3 +82,55 @@ func (s *Server) ListHistory(ctx context.Context, req *pb.ListHistoryRequest) (*
 		History: dataRsp,
 	}, nil
 }
+
+func (s *Server) ListAllHistory(ctx context.Context, req *pb.ListAllHistoryRequest) (*pb.ListAllHistoryResponse, error) {
+	startDate, err1 := utils.ParseStringToDate(req.StartDate)
+	endDate, err2 := utils.ParseStringToDate(req.EndDate)
+	err := multierr.Combine(
+		err1, err2,
+	)
+
+	if err != nil {
+		return &pb.ListAllHistoryResponse{
+			Status: http.StatusBadRequest,
+			Error:  fmt.Sprintf("invalid date: %v", err),
+		}, nil
+	}
+
+	histories, err := s.DB.ListHistories(ctx, db.ListHistoriesParams{
+		StartDate: startDate,
+		EndDate:   endDate,
+		Limit:     req.Limit,
+		Offset:    req.Offset,
+	})
+	if err != nil {
+		return &pb.ListAllHistoryResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to get histories: %v", err),
+		}, nil
+	}
+
+	dataRsp := make([]*pb.History, len(histories))
+	for i, h := range histories {
+		dataRsp[i] = &pb.History{
+			Type:           h.Type,
+			PassengerPhone: h.PassengerPhone,
+			DriverPhone:    h.DriverPhone,
+			PickUpLocation: &pb.Location{
+				Latitude:  h.PickUpLatitude,
+				Longitude: h.PickUpLongitude,
+			},
+			DropOffLocation: &pb.Location{
+				Latitude:  h.DropOffLatitude,
+				Longitude: h.DropOffLongitude,
+			},
+			CreatedAt: utils.ParsedDateToString(h.CreatedAt),
+			DoneAt:    utils.ParsedDateToString(h.DoneAt),
+		}
+	}
+
+	return &pb.ListAllHistoryResponse{
+		Status:  http.StatusOK,
+		History: dataRsp,
+	}, nil
+}
