@@ -10,6 +10,7 @@ import (
 	"github.com/lntvan166/e2tech-booking-svc/internal/db"
 	"github.com/lntvan166/e2tech-booking-svc/internal/pb"
 	"github.com/lntvan166/e2tech-booking-svc/internal/utils"
+	"go.uber.org/multierr"
 )
 
 func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest) (*pb.CreateRequestResponse, error) {
@@ -324,4 +325,56 @@ func (s *Server) GetRequest(ctx context.Context, req *pb.GetRequestRequest) (*pb
 			CreatedAt: utils.ParsedDateToString(request.CreatedAt),
 		},
 	}, nil
+}
+
+func (s *Server) ListAllRequest(ctx context.Context, req *pb.ListAllRequestRequest) (*pb.ListAllRequestResponse, error) {
+	startDate, err1 := utils.ParseStringToDate(req.StartDate)
+	endDate, err2 := utils.ParseStringToDate(req.EndDate)
+	err := multierr.Combine(
+		err1, err2,
+	)
+
+	if err != nil {
+		return &pb.ListAllRequestResponse{
+			Status: http.StatusBadRequest,
+			Error:  fmt.Sprintf("invalid date: %v", err),
+		}, nil
+	}
+
+	requests, err := s.DB.ListRequests(ctx, db.ListRequestsParams{
+		StartDate: startDate,
+		EndDate:   endDate,
+		Limit:     req.Limit,
+		Offset:    req.Offset,
+	})
+	if err != nil {
+		return &pb.ListAllRequestResponse{
+			Status: http.StatusInternalServerError,
+			Error:  fmt.Sprintf("failed to get histories: %v", err),
+		}, nil
+	}
+
+	dataRsp := make([]*pb.Request, len(requests))
+	for i, h := range requests {
+		dataRsp[i] = &pb.Request{
+			Id:    h.ID,
+			Type:  h.Type,
+			Phone: h.Phone,
+			PickUpLocation: &pb.Location{
+				Latitude:  h.PickUpLatitude,
+				Longitude: h.PickUpLongitude,
+			},
+			DropOffLocation: &pb.Location{
+				Latitude:  h.DropOffLatitude,
+				Longitude: h.DropOffLongitude,
+			},
+			CreatedAt: utils.ParsedDateToString(h.CreatedAt),
+		}
+	}
+
+	return &pb.ListAllRequestResponse{
+		Status:  http.StatusOK,
+		Request: dataRsp,
+	}, nil
+
 }

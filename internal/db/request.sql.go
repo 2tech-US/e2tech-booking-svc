@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 const createRequest = `-- name: CreateRequest :one
@@ -115,18 +116,27 @@ func (q *Queries) GetRequestByPhone(ctx context.Context, phone string) (Request,
 
 const listRequests = `-- name: ListRequests :many
 SELECT id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at FROM request
+WHERE created_at >= $3
+  AND created_at <= $4
 ORDER BY id
 LIMIT $1
 OFFSET $2
 `
 
 type ListRequestsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit     int32     `json:"limit"`
+	Offset    int32     `json:"offset"`
+	StartDate time.Time `json:"start_date"`
+	EndDate   time.Time `json:"end_date"`
 }
 
 func (q *Queries) ListRequests(ctx context.Context, arg ListRequestsParams) ([]Request, error) {
-	rows, err := q.db.QueryContext(ctx, listRequests, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listRequests,
+		arg.Limit,
+		arg.Offset,
+		arg.StartDate,
+		arg.EndDate,
+	)
 	if err != nil {
 		return nil, err
 	}

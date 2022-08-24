@@ -21,6 +21,8 @@ WHERE phone = $1 LIMIT 1;
 
 -- name: ListRequests :many
 SELECT * FROM request
+WHERE created_at >= sqlc.arg(start_date)
+  AND created_at <= sqlc.arg(end_date)
 ORDER BY id
 LIMIT $1
 OFFSET $2;

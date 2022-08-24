@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type BookingServiceClient interface {
 	ListHistory(ctx context.Context, in *ListHistoryRequest, opts ...grpc.CallOption) (*ListHistoryResponse, error)
 	ListAllHistory(ctx context.Context, in *ListAllHistoryRequest, opts ...grpc.CallOption) (*ListAllHistoryResponse, error)
+	ListAllRequest(ctx context.Context, in *ListAllRequestRequest, opts ...grpc.CallOption) (*ListAllRequestResponse, error)
 	SendRequest(ctx context.Context, in *SendRequestRequest, opts ...grpc.CallOption) (*SendRequestResponse, error)
 	// passenger
 	CreateRequest(ctx context.Context, in *CreateRequestRequest, opts ...grpc.CallOption) (*CreateRequestResponse, error)
@@ -57,6 +58,15 @@ func (c *bookingServiceClient) ListHistory(ctx context.Context, in *ListHistoryR
 func (c *bookingServiceClient) ListAllHistory(ctx context.Context, in *ListAllHistoryRequest, opts ...grpc.CallOption) (*ListAllHistoryResponse, error) {
 	out := new(ListAllHistoryResponse)
 	err := c.cc.Invoke(ctx, "/passenger.BookingService/ListAllHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bookingServiceClient) ListAllRequest(ctx context.Context, in *ListAllRequestRequest, opts ...grpc.CallOption) (*ListAllRequestResponse, error) {
+	out := new(ListAllRequestResponse)
+	err := c.cc.Invoke(ctx, "/passenger.BookingService/ListAllRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -150,6 +160,7 @@ func (c *bookingServiceClient) UpdateResponse(ctx context.Context, in *UpdateRes
 type BookingServiceServer interface {
 	ListHistory(context.Context, *ListHistoryRequest) (*ListHistoryResponse, error)
 	ListAllHistory(context.Context, *ListAllHistoryRequest) (*ListAllHistoryResponse, error)
+	ListAllRequest(context.Context, *ListAllRequestRequest) (*ListAllRequestResponse, error)
 	SendRequest(context.Context, *SendRequestRequest) (*SendRequestResponse, error)
 	// passenger
 	CreateRequest(context.Context, *CreateRequestRequest) (*CreateRequestResponse, error)
@@ -173,6 +184,9 @@ func (UnimplementedBookingServiceServer) ListHistory(context.Context, *ListHisto
 }
 func (UnimplementedBookingServiceServer) ListAllHistory(context.Context, *ListAllHistoryRequest) (*ListAllHistoryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAllHistory not implemented")
+}
+func (UnimplementedBookingServiceServer) ListAllRequest(context.Context, *ListAllRequestRequest) (*ListAllRequestResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAllRequest not implemented")
 }
 func (UnimplementedBookingServiceServer) SendRequest(context.Context, *SendRequestRequest) (*SendRequestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendRequest not implemented")
@@ -246,6 +260,24 @@ func _BookingService_ListAllHistory_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BookingServiceServer).ListAllHistory(ctx, req.(*ListAllHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BookingService_ListAllRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAllRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BookingServiceServer).ListAllRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/passenger.BookingService/ListAllRequest",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BookingServiceServer).ListAllRequest(ctx, req.(*ListAllRequestRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -426,6 +458,10 @@ var BookingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListAllHistory",
 			Handler:    _BookingService_ListAllHistory_Handler,
+		},
+		{
+			MethodName: "ListAllRequest",
+			Handler:    _BookingService_ListAllRequest_Handler,
 		},
 		{
 			MethodName: "SendRequest",
