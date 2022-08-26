@@ -114,7 +114,7 @@ func (q *Queries) GetResponseByDriverPhone(ctx context.Context, driverPhone stri
 }
 
 const getResponseByPassengerPhone = `-- name: GetResponseByPassengerPhone :one
-SELECT response.id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, response.created_at, request.id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, request.created_at, expire_at FROM response JOIN request ON request.id = response.request_id
+SELECT response.id, request_id, driver_phone, driver_name, driver_latitude, driver_longitude, response.created_at, request.id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, status, request.created_at, expire_at FROM response JOIN request ON request.id = response.request_id
 WHERE request.phone = $1 LIMIT 1
 `
 
@@ -133,6 +133,7 @@ type GetResponseByPassengerPhoneRow struct {
 	PickUpLongitude  float64      `json:"pick_up_longitude"`
 	DropOffLatitude  float64      `json:"drop_off_latitude"`
 	DropOffLongitude float64      `json:"drop_off_longitude"`
+	Price            float64      `json:"price"`
 	Status           string       `json:"status"`
 	CreatedAt_2      time.Time    `json:"created_at_2"`
 	ExpireAt         sql.NullTime `json:"expire_at"`
@@ -156,6 +157,7 @@ func (q *Queries) GetResponseByPassengerPhone(ctx context.Context, phone string)
 		&i.PickUpLongitude,
 		&i.DropOffLatitude,
 		&i.DropOffLongitude,
+		&i.Price,
 		&i.Status,
 		&i.CreatedAt_2,
 		&i.ExpireAt,

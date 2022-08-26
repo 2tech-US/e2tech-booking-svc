@@ -17,11 +17,12 @@ INSERT INTO request (
   pick_up_latitude,
   pick_up_longitude,
   drop_off_latitude,
-  drop_off_longitude
+  drop_off_longitude,
+  price
 ) VALUES (
-  $1, $2, $3, $4, $5, $6
+  $1, $2, $3, $4, $5, $6, $7
 )
-RETURNING id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at
+RETURNING id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, status, created_at, expire_at
 `
 
 type CreateRequestParams struct {
@@ -31,6 +32,7 @@ type CreateRequestParams struct {
 	PickUpLongitude  float64 `json:"pick_up_longitude"`
 	DropOffLatitude  float64 `json:"drop_off_latitude"`
 	DropOffLongitude float64 `json:"drop_off_longitude"`
+	Price            float64 `json:"price"`
 }
 
 func (q *Queries) CreateRequest(ctx context.Context, arg CreateRequestParams) (Request, error) {
@@ -41,6 +43,7 @@ func (q *Queries) CreateRequest(ctx context.Context, arg CreateRequestParams) (R
 		arg.PickUpLongitude,
 		arg.DropOffLatitude,
 		arg.DropOffLongitude,
+		arg.Price,
 	)
 	var i Request
 	err := row.Scan(
@@ -51,6 +54,7 @@ func (q *Queries) CreateRequest(ctx context.Context, arg CreateRequestParams) (R
 		&i.PickUpLongitude,
 		&i.DropOffLatitude,
 		&i.DropOffLongitude,
+		&i.Price,
 		&i.Status,
 		&i.CreatedAt,
 		&i.ExpireAt,
@@ -69,7 +73,7 @@ func (q *Queries) DeleteRequest(ctx context.Context, phone string) error {
 }
 
 const getRequest = `-- name: GetRequest :one
-SELECT id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at FROM request
+SELECT id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, status, created_at, expire_at FROM request
 WHERE id = $1 LIMIT 1
 `
 
@@ -84,6 +88,7 @@ func (q *Queries) GetRequest(ctx context.Context, id int64) (Request, error) {
 		&i.PickUpLongitude,
 		&i.DropOffLatitude,
 		&i.DropOffLongitude,
+		&i.Price,
 		&i.Status,
 		&i.CreatedAt,
 		&i.ExpireAt,
@@ -92,7 +97,7 @@ func (q *Queries) GetRequest(ctx context.Context, id int64) (Request, error) {
 }
 
 const getRequestByPhone = `-- name: GetRequestByPhone :one
-SELECT id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at FROM request
+SELECT id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, status, created_at, expire_at FROM request
 WHERE phone = $1 LIMIT 1
 `
 
@@ -107,6 +112,7 @@ func (q *Queries) GetRequestByPhone(ctx context.Context, phone string) (Request,
 		&i.PickUpLongitude,
 		&i.DropOffLatitude,
 		&i.DropOffLongitude,
+		&i.Price,
 		&i.Status,
 		&i.CreatedAt,
 		&i.ExpireAt,
@@ -115,7 +121,7 @@ func (q *Queries) GetRequestByPhone(ctx context.Context, phone string) (Request,
 }
 
 const listRequests = `-- name: ListRequests :many
-SELECT id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at FROM request
+SELECT id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, status, created_at, expire_at FROM request
 WHERE created_at >= $3
   AND created_at <= $4
 ORDER BY id
@@ -152,6 +158,7 @@ func (q *Queries) ListRequests(ctx context.Context, arg ListRequestsParams) ([]R
 			&i.PickUpLongitude,
 			&i.DropOffLatitude,
 			&i.DropOffLongitude,
+			&i.Price,
 			&i.Status,
 			&i.CreatedAt,
 			&i.ExpireAt,
@@ -173,7 +180,7 @@ const updateStatusRequest = `-- name: UpdateStatusRequest :one
 UPDATE request
 SET status = $2
 WHERE phone = $1
-RETURNING id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at
+RETURNING id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, status, created_at, expire_at
 `
 
 type UpdateStatusRequestParams struct {
@@ -192,6 +199,7 @@ func (q *Queries) UpdateStatusRequest(ctx context.Context, arg UpdateStatusReque
 		&i.PickUpLongitude,
 		&i.DropOffLatitude,
 		&i.DropOffLongitude,
+		&i.Price,
 		&i.Status,
 		&i.CreatedAt,
 		&i.ExpireAt,

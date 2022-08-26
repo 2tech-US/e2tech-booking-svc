@@ -6,6 +6,7 @@ CREATE TABLE "request" (
   "pick_up_longitude" float8 NOT NULL,
   "drop_off_latitude" float8 NOT NULL,
   "drop_off_longitude" float8 NOT NULL,
+  "price" float8 NOT NULL,
   "status" varchar NOT NULL DEFAULT 'finding',
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "expire_at" timestamptz

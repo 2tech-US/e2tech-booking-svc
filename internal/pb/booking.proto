@@ -130,7 +130,9 @@ message Request {
   string phone = 3;
   Location pick_up_location = 4;
   Location drop_off_location = 5;
-  string created_at = 6;
+  string status = 6;
+  double price = 7;
+  string created_at = 8;
 }
 
 message GetRequestRequest {

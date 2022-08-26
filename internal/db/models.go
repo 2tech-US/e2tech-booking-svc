@@ -38,6 +38,7 @@ type Request struct {
 	PickUpLongitude  float64      `json:"pick_up_longitude"`
 	DropOffLatitude  float64      `json:"drop_off_latitude"`
 	DropOffLongitude float64      `json:"drop_off_longitude"`
+	Price            float64      `json:"price"`
 	Status           string       `json:"status"`
 	CreatedAt        time.Time    `json:"created_at"`
 	ExpireAt         sql.NullTime `json:"expire_at"`

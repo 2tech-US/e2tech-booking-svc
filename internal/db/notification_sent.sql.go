@@ -46,7 +46,7 @@ func (q *Queries) DeleteNotificationSent(ctx context.Context, requestID int64) e
 }
 
 const getNotificationSentByPassengerPhone = `-- name: GetNotificationSentByPassengerPhone :one
-SELECT notification_sent.id, request_id, driver_phone_rejected, request.id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, status, created_at, expire_at FROM notification_sent JOIN request ON request.id = notification_sent.request_id
+SELECT notification_sent.id, request_id, driver_phone_rejected, request.id, type, phone, pick_up_latitude, pick_up_longitude, drop_off_latitude, drop_off_longitude, price, status, created_at, expire_at FROM notification_sent JOIN request ON request.id = notification_sent.request_id
 WHERE request.phone = $1 LIMIT 1
 `
 
@@ -61,6 +61,7 @@ type GetNotificationSentByPassengerPhoneRow struct {
 	PickUpLongitude     float64      `json:"pick_up_longitude"`
 	DropOffLatitude     float64      `json:"drop_off_latitude"`
 	DropOffLongitude    float64      `json:"drop_off_longitude"`
+	Price               float64      `json:"price"`
 	Status              string       `json:"status"`
 	CreatedAt           time.Time    `json:"created_at"`
 	ExpireAt            sql.NullTime `json:"expire_at"`
@@ -80,6 +81,7 @@ func (q *Queries) GetNotificationSentByPassengerPhone(ctx context.Context, phone
 		&i.PickUpLongitude,
 		&i.DropOffLatitude,
 		&i.DropOffLongitude,
+		&i.Price,
 		&i.Status,
 		&i.CreatedAt,
 		&i.ExpireAt,

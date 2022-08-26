@@ -47,6 +47,7 @@ func (s *Server) CreateRequest(ctx context.Context, req *pb.CreateRequestRequest
 		PickUpLongitude:  req.PickUpLocation.Longitude,
 		DropOffLatitude:  req.DropOffLocation.Latitude,
 		DropOffLongitude: req.DropOffLocation.Longitude,
+		Price:            utils.CalculatePrice(req.PickUpLocation.Latitude, req.PickUpLocation.Longitude, req.DropOffLocation.Latitude, req.DropOffLocation.Longitude),
 	}
 
 	_, err = s.DB.CreateRequest(ctx, arg)
@@ -322,6 +323,8 @@ func (s *Server) GetRequest(ctx context.Context, req *pb.GetRequestRequest) (*pb
 				Latitude:  request.DropOffLatitude,
 				Longitude: request.DropOffLongitude,
 			},
+			Price:     request.Price,
+			Status:    request.Status,
 			CreatedAt: utils.ParsedDateToString(request.CreatedAt),
 		},
 	}, nil
@@ -355,20 +358,22 @@ func (s *Server) ListAllRequest(ctx context.Context, req *pb.ListAllRequestReque
 	}
 
 	dataRsp := make([]*pb.Request, len(requests))
-	for i, h := range requests {
+	for i, r := range requests {
 		dataRsp[i] = &pb.Request{
-			Id:    h.ID,
-			Type:  h.Type,
-			Phone: h.Phone,
+			Id:    r.ID,
+			Type:  r.Type,
+			Phone: r.Phone,
 			PickUpLocation: &pb.Location{
-				Latitude:  h.PickUpLatitude,
-				Longitude: h.PickUpLongitude,
+				Latitude:  r.PickUpLatitude,
+				Longitude: r.PickUpLongitude,
 			},
 			DropOffLocation: &pb.Location{
-				Latitude:  h.DropOffLatitude,
-				Longitude: h.DropOffLongitude,
+				Latitude:  r.DropOffLatitude,
+				Longitude: r.DropOffLongitude,
 			},
-			CreatedAt: utils.ParsedDateToString(h.CreatedAt),
+			Price:     r.Price,
+			Status:    r.Status,
+			CreatedAt: utils.ParsedDateToString(r.CreatedAt),
 		}
 	}
 

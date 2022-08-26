@@ -5,9 +5,10 @@ INSERT INTO request (
   pick_up_latitude,
   pick_up_longitude,
   drop_off_latitude,
-  drop_off_longitude
+  drop_off_longitude,
+  price
 ) VALUES (
-  $1, $2, $3, $4, $5, $6
+  $1, $2, $3, $4, $5, $6, $7
 )
 RETURNING *;
 
